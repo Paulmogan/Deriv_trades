@@ -3,550 +3,593 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Deriv_Trade — Demo (All-in-one)</title>
-<meta name="description" content="Deriv_Trade demo SPA. Login/Register, Home, Trade, Payments — single index.html. M-Pesa Till 3675058." />
-<!-- Chart.js CDN -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<title>deriv_trade — Trading Platform (Frontend Simulation)</title>
+<meta name="description" content="deriv_trade — frontend trading simulation with accounts, payments, verification, candlestick charts, demo trading engine (local only)." />
+
+<!-- Charting libraries -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://unpkg.com/lightweight-charts@3.9.0/dist/lightweight-charts.standalone.production.js"></script>
 
 <style>
-  /* ===== Theme variables ===== */
   :root{
-    --bg: #000;
-    --panel: #0d0d0f;
-    --accent: #e30613;
-    --muted: #bfbfbf;
+    --bg:#000;
+    --panel:#0b0b0b;
+    --accent:#e30613;
+    --muted:#bfbfbf;
     --glass: rgba(255,255,255,0.02);
-    --success: #2bd17d;
-    --danger: #ff5b5b;
-    --radius: 12px;
-    --maxw: 1200px;
+    --success:#2bd17d;
+    --danger:#ff5b5b;
+    --radius:12px;
+    --maxw:1200px;
   }
-
   *{box-sizing:border-box}
-  body{margin:0;font-family:Inter,system-ui,Arial;background:linear-gradient(180deg,#000,#070707);color:#fff;-webkit-font-smoothing:antialiased;min-height:100vh}
+  body{margin:0;font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;background:linear-gradient(180deg,#000,#070707);color:#fff;-webkit-font-smoothing:antialiased}
   a{color:inherit}
+  .wrap{max-width:var(--maxw);margin:12px auto;padding:12px}
 
-  /* ===== Layout ===== */
-  .wrap{max-width:var(--maxw);margin:18px auto;padding:0 16px}
-  header{display:flex;align-items:center;justify-content:space-between;padding:12px;border-bottom:3px solid var(--accent);background:linear-gradient(90deg,#070707,#0b0b0b);border-radius:8px}
-  .brand{display:flex;gap:12px;align-items:center}
-  .logo{width:46px;height:46px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#9a0000);display:flex;align-items:center;justify-content:center;font-weight:900}
+  /* Header */
+  header{display:flex;align-items:center;justify-content:space-between;padding:12px;border-bottom:3px solid var(--accent);background:linear-gradient(90deg,#080808,#0b0b0b);border-radius:8px}
+  .brand{display:flex;align-items:center;gap:12px}
+  .logo{width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#9b0000);display:flex;align-items:center;justify-content:center;font-weight:900}
   .brand h1{margin:0;font-size:18px;color:var(--accent)}
-  nav{display:flex;gap:8px;align-items:center}
-  .tabbtn{background:transparent;border:none;padding:8px 12px;border-radius:8px;color:#fff;font-weight:700;cursor:pointer}
-  .tabbtn.active{background:rgba(227,6,19,0.09);border-left:3px solid var(--accent);padding-left:14px}
-  .small{color:var(--muted);font-size:13px}
-  .btn{background:var(--accent);color:#fff;padding:8px 12px;border-radius:8px;border:none;cursor:pointer;font-weight:800}
-  .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)}
-  .btn.red{background:#c40013}
-  .top-right{display:flex;gap:8px;align-items:center}
+  .nav{display:flex;gap:8px;align-items:center}
+  .nav button{background:transparent;border:none;color:#fff;padding:8px 12px;border-radius:8px;font-weight:800;cursor:pointer}
+  .nav button.active{background:rgba(227,6,19,0.08);border-left:3px solid var(--accent);padding-left:14px}
 
-  /* ===== Main area ===== */
-  .main-grid{display:grid;grid-template-columns:1fr 360px;gap:18px;margin-top:18px}
-  @media(max-width:980px){ .main-grid{grid-template-columns:1fr} header{flex-direction:column;align-items:flex-start;gap:10px} .top-right{width:100%;justify-content:flex-end} }
+  /* layout */
+  .grid{display:grid;grid-template-columns:1fr 360px;gap:16px;margin-top:12px}
+  @media (max-width:980px){ .grid{grid-template-columns:1fr} .sidebar{display:none} }
 
-  /* ===== Panels ===== */
   .panel{background:linear-gradient(180deg, rgba(255,255,255,0.01), var(--glass));padding:14px;border-radius:var(--radius);border:1px solid #151515}
-  .card{background:var(--panel);padding:12px;border-radius:10px;border:1px solid #121212}
+  .card{background:var(--panel);padding:12px;border-radius:10px;border:1px solid #141414}
 
-  /* ===== Login area ===== */
-  .auth-wrap{display:flex;gap:24px;align-items:stretch;justify-content:center;margin-top:30px}
-  .auth-left{flex:1;min-width:260px}
-  .auth-right{width:420px}
-  .tab{display:flex;gap:8px;margin-bottom:12px}
-  .input{width:100%;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:#080808;color:#fff}
-  .auth-note{background:#0a0a0a;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);color:var(--muted)}
-  .center{display:flex;align-items:center;justify-content:center}
-
-  /* ===== Trade layout ===== */
-  .chart-wrap{height:400px;border-radius:10px;padding:8px;background:#060606;border:1px solid #111}
-  .controls{display:flex;gap:8px;align-items:center;margin-top:12px;flex-wrap:wrap}
-  .orders{max-height:280px;overflow:auto;margin-top:12px}
-  .order{padding:10px;border-radius:8px;background:#0b0b0b;border-left:4px solid rgba(227,6,19,0.9);margin-bottom:8px;display:flex;justify-content:space-between;gap:8px}
+  .small{color:var(--muted);font-size:13px}
   .muted{color:var(--muted)}
 
-  /* ===== Payments ===== */
-  .pay-icons{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:12px}
-  .pay-icon{width:64px;height:64px;background:#fff;padding:6px;border-radius:8px;display:flex;align-items:center;justify-content:center;filter:grayscale(1) contrast(0.9) brightness(0.8)}
-  .pay-note{font-size:14px;color:var(--muted);margin-top:8px}
+  /* auth */
+  .auth-wrap{display:flex;gap:18px;align-items:stretch;justify-content:center}
+  .auth-left{flex:1}
+  .auth-right{width:420px}
 
-  /* ===== Alerts ===== */
-  .alerts{position:fixed;right:18px;bottom:18px;display:flex;flex-direction:column;gap:8px;z-index:999}
-  .alert{padding:10px 12px;border-radius:8px;background:#111;border-left:4px solid var(--accent);min-width:220px;box-shadow:0 12px 40px rgba(0,0,0,0.6)}
+  .input{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:#080808;color:#fff}
+  .btn{background:var(--accent);color:#fff;padding:10px 12px;border-radius:8px;border:none;cursor:pointer;font-weight:800}
+  .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)}
+  .btn.red{background:#c40013}
 
-  /* ===== Footer ===== */
-  footer{margin-top:22px;padding:12px;text-align:center;color:var(--muted)}
+  /* sidebar */
+  .sidebar{display:flex;flex-direction:column;gap:12px;padding:12px;border-radius:10px;background:linear-gradient(180deg,#060606,#0a0a0a);border:1px solid #121212}
+  .menu button{background:transparent;border:none;color:#fff;text-align:left;padding:10px;border-radius:8px;cursor:pointer;font-weight:800}
+  .menu button:hover{background:rgba(227,6,19,0.06)}
+  .menu .active{background:rgba(227,6,19,0.09);border-left:4px solid var(--accent);padding-left:12px}
 
-  /* small */
-  .xs{font-size:13px;color:var(--muted)}
+  /* chart area */
+  .chart-area{height:420px;border-radius:8px;overflow:hidden;border:1px solid #111;background:#040404;padding:8px}
+  .candles-toggle{margin-top:8px;display:flex;gap:8px;align-items:center}
+
+  /* trades */
+  .controls{display:flex;gap:8px;align-items:center;margin-top:12px;flex-wrap:wrap}
+  .orders{max-height:300px;overflow:auto;margin-top:12px}
+  .order{padding:10px;border-radius:8px;background:#0b0b0b;border-left:4px solid rgba(227,6,19,0.9);margin-bottom:8px;display:flex;justify-content:space-between}
+
+  /* kyc */
+  .kyc-step{padding:12px;border-radius:8px;background:#0a0a0a;border:1px solid rgba(255,255,255,0.02);margin-top:8px}
+
+  /* payments icons */
+  .pay-icons{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .pay-icon{width:56px;height:56px;background:#fff;padding:6px;border-radius:8px;display:flex;align-items:center;justify-content:center;filter:grayscale(1) brightness(.9)}
+
+  /* footer */
+  footer{margin-top:14px;text-align:center;color:var(--muted);padding:12px}
 </style>
 </head>
 <body>
   <div class="wrap">
-
-    <!-- HEADER -->
     <header>
       <div class="brand">
         <div class="logo">DT</div>
         <div>
-          <h1>Deriv_Trade</h1>
-          <div class="small">Black & Red • Demo Trading</div>
+          <h1>deriv_trade</h1>
+          <div class="small">Black & Red • All-in-one frontend simulation</div>
         </div>
       </div>
 
-      <div class="top-right">
-        <nav id="mainNav" style="display:flex;gap:6px;align-items:center">
-          <button class="tabbtn" data-page="home" onclick="showPage('home')">Home</button>
-          <button class="tabbtn" data-page="trade" onclick="showPage('trade')">Trade</button>
-          <button class="tabbtn" data-page="payments" onclick="showPage('payments')">Payments</button>
-        </nav>
+      <nav class="nav" id="nav">
+        <button data-page="home" class="active" onclick="navigate('home')">Home</button>
+        <button data-page="trade" onclick="navigate('trade')">Trade</button>
+        <button data-page="payments" onclick="navigate('payments')">Payments</button>
+        <button data-page="verify" onclick="navigate('verify')">Verification</button>
+      </nav>
 
-        <div id="userControls" style="display:flex;gap:8px;align-items:center;margin-left:12px">
-          <div class="xs" id="welcomeUser"></div>
-          <button class="btn ghost" id="logoutBtn" onclick="logout()" style="display:none">Logout</button>
-        </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div id="userWelcome" class="small"></div>
+        <button class="btn ghost" id="logoutBtn" onclick="logout()" style="display:none">Logout</button>
       </div>
     </header>
 
-    <!-- AUTH GATE: Login / Register (shows when not logged) -->
-    <div id="authArea" style="margin-top:18px"></div>
+    <!-- AUTH area (shown if not logged in) -->
+    <div id="authArea" style="margin-top:16px"></div>
 
-    <!-- APP CONTENT -->
-    <main id="appArea" style="display:none;margin-top:18px">
+    <!-- APP area -->
+    <div id="appArea" style="display:none;margin-top:16px">
       <div id="home" class="panel" style="display:none">
         <div style="display:flex;justify-content:space-between;gap:12px;align-items:center">
           <div>
-            <h2 style="color:var(--accent);margin:0">Welcome to Deriv_Trade</h2>
-            <div class="muted">Demo environment. Practice trading risk-free.</div>
+            <h2 style="color:var(--accent);margin:0">Welcome to deriv_trade</h2>
+            <div class="small">Practice with simulated markets, mock verification, and multiple payment tools. This site is frontend-only.</div>
           </div>
           <div>
-            <button class="btn" onclick="showPage('trade')">Open Trade</button>
-            <button class="btn ghost" onclick="showPage('payments')">Deposit</button>
+            <button class="btn" onclick="navigate('trade')">Open Trade</button>
+            <button class="btn ghost" onclick="navigate('payments')">Deposit</button>
           </div>
         </div>
 
-        <div style="display:flex;gap:16px;margin-top:16px;flex-wrap:wrap">
-          <div class="card" style="flex:1;min-width:260px">
+        <div style="display:flex;gap:12px;margin-top:16px;flex-wrap:wrap">
+          <div class="card" style="min-width:240px">
             <div style="font-weight:800">M-Pesa Till</div>
-            <div style="color:var(--accent);font-weight:900;font-size:20px">3675058</div>
-            <div class="muted" style="margin-top:6px">After payment send transaction ID via WhatsApp</div>
+            <div style="font-weight:900;color:var(--accent);font-size:20px">3675058</div>
+            <div class="small" style="margin-top:6px">Send payment, then verify via the Payments page.</div>
           </div>
 
-          <div class="card" style="flex:2;min-width:280px">
-            <h3 style="color:var(--accent);margin:0">Features</h3>
-            <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
-              <div class="card muted" style="min-width:160px">Demo Trading Engine</div>
-              <div class="card muted" style="min-width:160px">Simulated Live Chart</div>
-              <div class="card muted" style="min-width:160px">Easy Payments</div>
-            </div>
+          <div class="card" style="flex:1;min-width:280px">
+            <h3 style="color:var(--accent);margin:0">Platform tools</h3>
+            <ul class="small" style="margin-top:10px">
+              <li>Real-like candlestick & line charts</li>
+              <li>Demo accounts & trade history (saved locally)</li>
+              <li>Multiple payment methods (mock)</li>
+              <li>Verification & ID upload (front-end)</li>
+            </ul>
           </div>
         </div>
       </div>
 
+      <!-- Trade page -->
       <div id="trade" style="display:none">
-        <div class="main-grid">
-          <!-- CENTER -->
+        <div class="grid">
+          <!-- center -->
           <section>
             <div class="panel">
               <div style="display:flex;justify-content:space-between;align-items:center">
                 <div>
-                  <div id="assetTitle" style="font-weight:800">EUR/USD</div>
-                  <div class="xs muted">Forex • Major</div>
+                  <div id="assetName" style="font-weight:900">EUR / USD</div>
+                  <div class="small">Simulated market • demo only</div>
                 </div>
-                <div class="xs">Spread: <strong id="spread">0.8</strong></div>
+                <div class="small">Spread <strong id="assetSpread">0.8</strong></div>
               </div>
 
-              <div class="chart-wrap" style="margin-top:12px">
-                <canvas id="chartCanvas"></canvas>
+              <div class="chart-area" id="chartArea" style="margin-top:12px">
+                <div id="candlestick" style="height:100%"></div>
               </div>
 
-              <div class="controls">
-                <select id="assetSelect" class="input" onchange="changeAsset(this.value)">
-                  <option value="EURUSD">EUR/USD</option>
-                  <option value="GBPUSD">GBP/USD</option>
-                  <option value="BTCUSD">BTC/USD</option>
-                  <option value="XAUUSD">XAU/USD</option>
-                  <option value="USDJPY">USD/JPY</option>
-                </select>
-
-                <input id="tradeSize" class="input" type="number" value="1" min="0.01" step="0.01" style="width:110px" />
-                <select id="tradeLev" class="input" style="width:110px">
-                  <option>10</option><option>25</option><option selected>50</option><option>100</option>
-                </select>
-
-                <button class="btn" onclick="quickOrder('buy')">Buy</button>
-                <button class="btn sell" onclick="quickOrder('sell')">Sell</button>
-
-                <div style="margin-left:auto" class="muted xs">Demo: local only</div>
+              <div class="candles-toggle" style="justify-content:space-between">
+                <div>
+                  <label class="small muted">Chart type:</label>
+                  <select id="chartType" class="input" style="padding:6px;border-radius:8px;background:#0b0b0b;border:1px solid rgba(255,255,255,0.04);color:#fff" onchange="switchChart(this.value)">
+                    <option value="candles">Candlesticks</option>
+                    <option value="line">Line</option>
+                  </select>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <button class="btn ghost" onclick="toggleIndicators()">Indicators</button>
+                  <div class="small muted">Use the right panel to place trades</div>
+                </div>
               </div>
 
-              <div class="orders" id="ordersList"></div>
+              <div class="panel" style="margin-top:12px">
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                  <select id="assetSelect" class="input" style="min-width:160px" onchange="changeAsset(this.value)">
+                    <option value="EURUSD">EUR/USD</option>
+                    <option value="GBPUSD">GBP/USD</option>
+                    <option value="BTCUSD">BTC/USD</option>
+                    <option value="XAUUSD">XAU/USD</option>
+                    <option value="USDJPY">USD/JPY</option>
+                  </select>
+
+                  <input id="size" class="input" style="width:110px" type="number" min="0.01" step="0.01" value="1" />
+                  <select id="leverage" class="input" style="width:110px"><option>10</option><option>25</option><option selected>50</option><option>100</option></select>
+
+                  <button class="btn" onclick="placeQuick('buy')">Buy</button>
+                  <button class="btn red" onclick="placeQuick('sell')">Sell</button>
+
+                  <div style="margin-left:auto" class="small muted">Orders persist locally</div>
+                </div>
+              </div>
+
+              <div class="orders" id="ordersArea"></div>
             </div>
 
             <div class="panel" style="margin-top:12px">
-              <h4 style="color:var(--accent);margin:0">Signals (demo)</h4>
-              <div class="muted xs" style="margin-top:8px">Educational signals only.</div>
+              <h4 style="color:var(--accent);margin:0">Market News (mock)</h4>
+              <div class="small muted" style="margin-top:8px">This is a simulated news feed for practice</div>
               <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
-                <div class="card" style="min-width:200px">BUY EUR/USD • TP 1.0990 • SL 1.0790</div>
-                <div class="card" style="min-width:200px">SELL XAU/USD • TP 2280 • SL 2330</div>
+                <div class="card small">Economic calendar: USD CPI — volatile</div>
+                <div class="card small">GBP: rate expectations shift</div>
+                <div class="card small">BTC: volatility remains high</div>
               </div>
             </div>
-
           </section>
 
-          <!-- RIGHT -->
-          <aside>
-            <div class="panel">
+          <!-- right -->
+          <aside class="sidebar">
+            <div class="card">
               <h4 style="margin:0;color:var(--accent)">Trade Panel</h4>
-              <div class="xs muted" style="margin-top:8px">Place demo orders — execution simulated</div>
+              <div class="small muted" style="margin-top:8px">Selected: <span id="panelAsset">EUR/USD</span></div>
 
-              <div style="margin-top:12px">
-                <div class="xs muted">Selected</div>
-                <div style="font-weight:900" id="panelAsset">EUR/USD</div>
+              <label class="small muted" style="margin-top:8px">Order size</label>
+              <input id="panelSize" class="input" type="number" value="1" min="0.01" step="0.01" />
 
-                <label class="xs muted" style="margin-top:8px">Size</label>
-                <input id="panelSize" class="input" type="number" value="1" step="0.01" />
+              <label class="small muted" style="margin-top:8px">Leverage</label>
+              <select id="panelLev" class="input">
+                <option>10</option><option>25</option><option selected>50</option><option>100</option>
+              </select>
 
-                <label class="xs muted" style="margin-top:8px">Leverage</label>
-                <select id="panelLev" class="input">
-                  <option>10</option><option>25</option><option selected>50</option><option>100</option>
-                </select>
-
-                <div style="display:flex;gap:8px;margin-top:10px">
-                  <button class="btn" onclick="placeTrade('buy')">Place Buy</button>
-                  <button class="btn sell" onclick="placeTrade('sell')">Place Sell</button>
-                </div>
+              <div style="display:flex;gap:8px;margin-top:10px">
+                <button class="btn" onclick="placeTrade('buy')">Place Buy</button>
+                <button class="btn red" onclick="placeTrade('sell')">Place Sell</button>
               </div>
 
               <div style="margin-top:12px">
                 <h4 style="margin:0;color:var(--accent)">Account</h4>
-                <div class="xs muted" style="margin-top:8px">Balance</div>
-                <div id="accBalance" style="font-weight:900">KES 10,000</div>
-                <div class="xs muted" style="margin-top:8px">Open P/L</div>
-                <div id="accPL">KES 0</div>
+                <div class="small muted" style="margin-top:8px">Balance</div>
+                <div id="balance" style="font-weight:900">KES 10,000</div>
+                <div class="small muted" style="margin-top:8px">Open P/L</div>
+                <div id="openPL">KES 0</div>
 
-                <div style="margin-top:10px;display:flex;gap:8px">
-                  <button class="btn" onclick="depositDialog()">Deposit</button>
+                <div style="display:flex;gap:8px;margin-top:10px">
+                  <button class="btn" onclick="deposit()">Deposit</button>
                   <button class="btn ghost" onclick="resetDemo()">Reset</button>
                 </div>
               </div>
 
               <div style="margin-top:12px">
-                <h4 style="margin:0">Recent</h4>
-                <div id="recentList" class="orders"></div>
+                <h4 style="margin:0">Recent Trades</h4>
+                <div id="recent" class="orders"></div>
                 <div style="display:flex;gap:8px;margin-top:8px">
                   <button class="btn ghost" onclick="exportHistory()">Export</button>
+                  <button class="btn ghost" onclick="closeAll()">Close All</button>
                 </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <h4 style="margin:0">Tools</h4>
+              <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+                <button class="btn ghost" onclick="openCalculator()">Profit Calculator</button>
+                <button class="btn ghost" onclick="openOrderBook()">Order Book (mock)</button>
+                <button class="btn ghost" onclick="openSettings()">Settings</button>
               </div>
             </div>
           </aside>
         </div>
       </div>
 
+      <!-- Payments -->
       <div id="payments" class="panel" style="display:none">
         <div style="display:flex;justify-content:space-between;align-items:center">
           <div>
-            <h2 style="color:var(--accent);margin:0">Payments & Deposit</h2>
-            <div class="muted xs">Preferred: M-Pesa Till (demo)</div>
+            <h2 style="color:var(--accent);margin:0">Payments & Currencies</h2>
+            <div class="small muted">Multiple payment tools & currencies (mock)</div>
           </div>
           <div>
+            <select id="currency" class="input" onchange="changeCurrency(this.value)">
+              <option value="KES">KES</option>
+              <option value="USD">USD</option>
+              <option value="EUR">EUR</option>
+              <option value="GBP">GBP</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+          <div style="flex:1">
+            <div class="small">Preferred (M-Pesa Till)</div>
+            <div style="font-weight:900;color:var(--accent);font-size:20px">3675058</div>
+            <div class="muted" style="margin-top:6px">Send payment and then verify with the transaction ID.</div>
+          </div>
+          <div style="display:flex;gap:8px">
             <button class="btn" onclick="copyTill()">Copy Till</button>
-            <button class="btn ghost" onclick="openWhats()">Verify</button>
+            <button class="btn ghost" onclick="openWhats()">Open WhatsApp</button>
           </div>
         </div>
 
         <div class="card" style="margin-top:12px">
-          <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
-            <div style="flex:1">
-              <div class="muted">Till Number</div>
-              <div style="font-weight:900;color:var(--accent);font-size:20px">3675058</div>
-              <div class="pay-note">After payment, send transaction ID via WhatsApp for verification (demo flow).</div>
-            </div>
-            <div class="pay-icons">
-              <div class="pay-icon"><img src="https://upload.wikimedia.org/wikipedia/commons/6/6d/M-PESA_LOGO-01.svg" alt="M-Pesa" style="width:100%"/></div>
-              <div class="pay-icon"><img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" style="width:100%"/></div>
-              <div class="pay-icon"><img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Visa.svg" alt="Visa" style="width:100%"/></div>
-              <div class="pay-icon"><img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Mastercard-logo.png" alt="MC" style="width:100%"/></div>
-            </div>
+          <h4 style="color:var(--accent);margin:0">Other Payment Methods</h4>
+          <div class="pay-icons">
+            <div class="pay-icon"><img src="https://upload.wikimedia.org/wikipedia/commons/6/6d/M-PESA_LOGO-01.svg" alt="M-Pesa" style="width:100%"></div>
+            <div class="pay-icon"><img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" style="width:100%"></div>
+            <div class="pay-icon"><img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Visa.svg" alt="Visa" style="width:100%"></div>
+            <div class="pay-icon"><img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Mastercard-logo.png" alt="MC" style="width:100%"></div>
+            <div class="pay-icon"><img src="https://upload.wikimedia.org/wikipedia/commons/4/46/Bitcoin.svg" alt="BTC" style="width:100%"></div>
           </div>
-        </div>
-
-        <div class="card" style="margin-top:12px">
-          <h4 style="color:var(--accent);margin:0">How to verify (demo)</h4>
-          <ol class="muted xs" style="margin-top:8px">
-            <li>Send payment to Till <strong>3675058</strong>.</li>
-            <li>Open WhatsApp and send the transaction ID to support.</li>
-            <li>We will (demo) confirm and credit your demo account when you press "Simulate Verify".</li>
-          </ol>
-          <div style="margin-top:10px">
-            <button class="btn" onclick="simulateVerify()">Simulate Verify</button>
-          </div>
+          <div class="pay-note">All payment integrations here are mock implementations for demo & frontend testing only.</div>
         </div>
       </div>
 
-      <footer><div class="muted xs">© <span id="year"></span> Deriv_Trade — Demo environment (local only)</div></footer>
-    </main>
+      <!-- Verification / KYC -->
+      <div id="verify" class="panel" style="display:none">
+        <h2 style="color:var(--accent);margin:0">Verification (KYC)</h2>
+        <div class="small muted" style="margin-top:8px">Upload ID & proof address — frontend mock only</div>
 
+        <div class="kyc-step">
+          <strong>Step 1 — Upload ID</strong>
+          <div class="small muted" style="margin-top:8px">Accepted: national ID, passport, driving license (mock upload)</div>
+          <input id="idFile" type="file" accept="image/*,.pdf" style="margin-top:8px" />
+          <div style="margin-top:8px">
+            <button class="btn" onclick="uploadID()">Upload ID (mock)</button>
+          </div>
+        </div>
+
+        <div class="kyc-step">
+          <strong>Step 2 — Proof of Address</strong>
+          <div class="small muted" style="margin-top:8px">Utility bill or bank statement (mock)</div>
+          <input id="addrFile" type="file" accept="image/*,.pdf" style="margin-top:8px" />
+          <div style="margin-top:8px">
+            <button class="btn" onclick="uploadAddress()">Upload Address (mock)</button>
+          </div>
+        </div>
+
+        <div class="kyc-step">
+          <strong>Step 3 — Identity Check</strong>
+          <div class="small muted" style="margin-top:8px">We will (mock) verify your documents and give a status.</div>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button class="btn" onclick="simulateKyc('approved')">Simulate Approve</button>
+            <button class="btn ghost" onclick="simulateKyc('rejected')">Simulate Reject</button>
+          </div>
+          <div id="kycStatus" class="small muted" style="margin-top:8px"></div>
+        </div>
+      </div>
+
+      <footer><div class="muted small">© <span id="year"></span> deriv_trade — frontend simulation. Not a real broker.</div></footer>
+    </div>
+
+    <!-- alerts -->
+    <div class="alerts" id="alerts"></div>
   </div>
 
-  <!-- alerts -->
-  <div class="alerts" id="alerts"></div>
-
 <script>
-/* ===============================
-   Simple Auth (Option 1 behavior)
-   - users stored under 'dt_users'
-   - session stored under 'dt_session'
-   =============================== */
-const USERS_KEY = 'dt_users_v1';
-const SESSION_KEY = 'dt_session_v1';
-const DEMO_STATE_KEY = 'dt_demo_state_v1';
+/* ============================================================
+   deriv_trade — single-file frontend simulation
+   - Local-only accounts & demo state stored in localStorage
+   - Candlestick chart uses LightweightCharts
+   - Line chart uses Chart.js (fallback)
+   - Features: accounts, payments mock, KYC mock, orders, PnL
+   ============================================================ */
 
+/* ===== Keys ===== */
+const USERS_KEY = 'deriv_trade_users_v1';
+const SESSION_KEY = 'deriv_trade_session_v1';
+const DEMO_KEY = 'deriv_trade_demo_v1';
+
+/* ===== Utilities ===== */
 function getUsers(){ return JSON.parse(localStorage.getItem(USERS_KEY) || '{}'); }
 function saveUsers(u){ localStorage.setItem(USERS_KEY, JSON.stringify(u)); }
 function getSession(){ return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); }
 function setSession(username){ localStorage.setItem(SESSION_KEY, JSON.stringify({ username, ts: Date.now() })); }
 function clearSession(){ localStorage.removeItem(SESSION_KEY); }
 
-/* ===== Demo state structure ===== */
-let demoState = JSON.parse(localStorage.getItem(DEMO_STATE_KEY) || JSON.stringify({
+function showAlert(text, type='info', t=4200){
+  const wrap = document.getElementById('alerts');
+  const el = document.createElement('div'); el.className='alert';
+  el.innerHTML = `<div style="font-weight:800">${text}</div><div class="muted small">${type}</div>`;
+  wrap.appendChild(el);
+  setTimeout(()=> el.remove(), t);
+}
+
+/* ===== Initial demo state ===== */
+let demoState = JSON.parse(localStorage.getItem(DEMO_KEY) || JSON.stringify({
   balance: 10000,
-  orders: [], // pending positions and open positions
-  history: [] // closed
+  orders: [], // pending/open positions
+  history: [], // closed trades
 }));
 
-function saveDemo(){ localStorage.setItem(DEMO_STATE_KEY, JSON.stringify(demoState)); updateAccountUI(); renderOrders(); renderRecent(); }
+function saveDemo(){ localStorage.setItem(DEMO_KEY, JSON.stringify(demoState)); updateAccountUI(); renderOrders(); renderRecentList(); }
 
-/* ===== UI building: auth area (login/register) ===== */
+/* ===== Build auth UI ===== */
 const authArea = document.getElementById('authArea');
 const appArea = document.getElementById('appArea');
-const welcomeUser = document.getElementById('welcomeUser');
+const userWelcome = document.getElementById('userWelcome');
 const logoutBtn = document.getElementById('logoutBtn');
 
-function buildAuthUI(){
+function buildAuth(){
   authArea.innerHTML = `
     <div class="auth-wrap">
       <div class="auth-left panel">
-        <h2 style="color:var(--accent);margin:0">Welcome to Deriv_Trade</h2>
-        <p class="muted xs" style="margin-top:8px">Sign in or create a quick account to access demo trading.</p>
-        <div style="margin-top:12px" class="auth-note">
-          <div><strong>Demo Notice</strong></div>
-          <div class="xs muted" style="margin-top:6px">Accounts and demo data are stored locally in your browser (no backend). Quick Demo will create a sample user.</div>
-        </div>
+        <h2 style="color:var(--accent);margin:0">deriv_trade</h2>
+        <p class="small muted" style="margin-top:8px">Create an account to start trading on this frontend simulation.</p>
+        <div class="small muted" style="margin-top:10px">Quick demo accounts are available — click Quick Demo.</div>
       </div>
-
       <div class="auth-right card">
-        <div class="tab">
-          <button id="tabLogin" class="tabbtn active">Login</button>
-          <button id="tabReg" class="tabbtn">Register</button>
+        <div style="display:flex;gap:8px;margin-bottom:10px">
+          <button class="btn" id="tabLogin">Login</button><button class="btn ghost" id="tabReg">Register</button>
         </div>
-
         <div id="loginPanel">
-          <div style="margin-bottom:8px"><input id="loginUser" class="input" placeholder="Username (e.g. paul123)"></div>
-          <div style="margin-bottom:8px"><input id="loginPass" type="password" class="input" placeholder="Password"></div>
-          <div style="display:flex;gap:8px">
-            <button class="btn" onclick="doLogin()">Login</button>
-            <button class="btn ghost" onclick="quickDemo()">Quick Demo</button>
-          </div>
-          <div id="loginMsg" class="xs muted" style="margin-top:8px"></div>
+          <input id="loginUser" class="input" placeholder="Username" /><div style="height:8px"></div>
+          <input id="loginPass" type="password" class="input" placeholder="Password" /><div style="height:8px"></div>
+          <div style="display:flex;gap:8px"><button class="btn" onclick="login()">Login</button><button class="btn ghost" onclick="quickDemo()">Quick Demo</button></div>
+          <div id="loginMsg" class="small muted" style="margin-top:8px"></div>
         </div>
-
         <div id="regPanel" style="display:none">
-          <div style="margin-bottom:8px"><input id="regUser" class="input" placeholder="Choose username"></div>
-          <div style="margin-bottom:8px"><input id="regPass" type="password" class="input" placeholder="Password"></div>
-          <div style="margin-bottom:8px"><input id="regPass2" type="password" class="input" placeholder="Confirm password"></div>
-          <div style="display:flex;gap:8px">
-            <button class="btn" onclick="doRegister()">Create Account</button>
-            <button class="btn ghost" onclick="fillSample()">Autofill</button>
-          </div>
-          <div id="regMsg" class="xs muted" style="margin-top:8px"></div>
+          <input id="regUser" class="input" placeholder="Choose username" /><div style="height:8px"></div>
+          <input id="regPass" type="password" class="input" placeholder="Password" /><div style="height:8px"></div>
+          <input id="regPass2" type="password" class="input" placeholder="Confirm Password" /><div style="height:8px"></div>
+          <div style="display:flex;gap:8px"><button class="btn" onclick="register()">Create Account</button><button class="btn ghost" onclick="autofill()">Autofill</button></div>
+          <div id="regMsg" class="small muted" style="margin-top:8px"></div>
         </div>
       </div>
     </div>
   `;
-
-  // hookup
-  document.getElementById('tabLogin').onclick = ()=>{ showLogin(); };
-  document.getElementById('tabReg').onclick = ()=>{ showReg(); };
+  document.getElementById('tabLogin').onclick = ()=>{ document.getElementById('loginPanel').style.display='block'; document.getElementById('regPanel').style.display='none'; };
+  document.getElementById('tabReg').onclick = ()=>{ document.getElementById('loginPanel').style.display='none'; document.getElementById('regPanel').style.display='block'; };
 }
-
-function showLogin(){ document.getElementById('loginPanel').style.display='block'; document.getElementById('regPanel').style.display='none'; document.getElementById('tabLogin').classList.add('active'); document.getElementById('tabReg').classList.remove('active'); }
-function showReg(){ document.getElementById('loginPanel').style.display='none'; document.getElementById('regPanel').style.display='block'; document.getElementById('tabReg').classList.add('active'); document.getElementById('tabLogin').classList.remove('active'); }
+buildAuth();
 
 /* ===== Auth actions ===== */
-function doRegister(){
+function register(){
   const u = document.getElementById('regUser').value.trim();
   const p = document.getElementById('regPass').value;
   const p2 = document.getElementById('regPass2').value;
   const msg = document.getElementById('regMsg');
   msg.innerText = '';
-  if(!u || !p || !p2){ msg.innerText = 'Fill all fields'; return; }
-  if(p !== p2){ msg.innerText = 'Passwords do not match'; return; }
+  if(!u||!p||!p2){ msg.innerText='Fill all fields'; return; }
+  if(p!==p2){ msg.innerText='Passwords do not match'; return; }
   const users = getUsers();
-  if(users[u]){ msg.innerText = 'Username taken'; return; }
-  users[u] = { pass: p, created: Date.now() };
+  if(users[u]){ msg.innerText='Username taken'; return; }
+  users[u] = { pass:p, created:Date.now() };
   saveUsers(users);
   setSession(u);
-  msg.innerText = 'Account created — redirecting...';
-  setTimeout(()=> initApp(), 700);
-}
-
-function doLogin(){
-  const u = document.getElementById('loginUser').value.trim();
-  const p = document.getElementById('loginPass').value;
-  const msg = document.getElementById('loginMsg');
-  msg.innerText = '';
-  if(!u || !p){ msg.innerText = 'Enter username and password'; return; }
-  const users = getUsers();
-  if(!users[u] || users[u].pass !== p){ msg.innerText = 'Invalid credentials'; return; }
-  setSession(u);
-  msg.innerText = 'Login successful — redirecting...';
+  showAlert('Account created — signed in', 'success');
   setTimeout(()=> initApp(), 500);
 }
-
+function login(){
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value;
+  const msg = document.getElementById('loginMsg'); msg.innerText='';
+  if(!u||!p){ msg.innerText='Enter username & password'; return; }
+  const users = getUsers();
+  if(!users[u] || users[u].pass !== p){ msg.innerText='Invalid credentials'; return; }
+  setSession(u);
+  showAlert('Login successful', 'success');
+  setTimeout(()=> initApp(), 400);
+}
 function quickDemo(){
   const users = getUsers();
-  users['demo_user'] = { pass: 'demo123', created: Date.now() };
+  users['demo_user'] = { pass:'demo123', created:Date.now() };
   saveUsers(users);
   setSession('demo_user');
-  initApp();
+  showAlert('Quick demo created — signed in', 'info');
+  setTimeout(()=> initApp(), 300);
 }
+function autofill(){ document.getElementById('regUser').value='user'+Math.floor(Math.random()*900); document.getElementById('regPass').value='pass123'; document.getElementById('regPass2').value='pass123'; }
 
-function fillSample(){
-  document.getElementById('regUser').value = 'user'+Math.floor(Math.random()*900);
-  document.getElementById('regPass').value = 'pass123';
-  document.getElementById('regPass2').value = 'pass123';
-}
+function logout(){ clearSession(); appArea.style.display='none'; authArea.style.display='block'; userWelcome.innerText=''; logoutBtn.style.display='none'; showAlert('Logged out', 'info'); }
 
-/* ===== App initialization ===== */
+/* ===== App init ===== */
 function initApp(){
-  // Hide auth, show app
   authArea.style.display = 'none';
   appArea.style.display = 'block';
   const s = getSession();
-  if(s && s.username){
-    welcomeUser.innerText = 'Hi, ' + s.username;
-    logoutBtn.style.display = 'inline-block';
-  } else {
-    welcomeUser.innerText = '';
-    logoutBtn.style.display = 'none';
-  }
-  // default show home
-  showPage('home');
+  if(s && s.username){ userWelcome.innerText = 'Hi, ' + s.username; logoutBtn.style.display='inline-block'; }
+  navigate('home');
   updateAccountUI();
+  renderOrders();
+  renderRecentList();
 }
 
-/* If session exists on load, initialize app, else show auth */
-(function onLoad(){
-  buildAuthUI();
-  const s = getSession();
-  if(s && s.username){ initApp(); } else { authArea.style.display = 'block'; appArea.style.display = 'none'; }
-})();
+/* If already logged in when page loaded, init */
+if(getSession()){ initApp(); } else { authArea.style.display='block'; appArea.style.display='none'; }
 
-/* ===== Logout ===== */
-function logout(){
-  clearSession();
-  // resume auth UI
-  authArea.style.display = 'block';
-  appArea.style.display = 'none';
-  welcomeUser.innerText = '';
-  logoutBtn.style.display = 'none';
-  showAlert('Logged out', 'info');
-}
-
-/* ===== Page switching (instant tabs) ===== */
-function showPage(page){
-  // hide auth area if any
-  authArea.style.display = 'none';
-  appArea.style.display = 'block';
-  // hide sections
-  ['home','trade','payments'].forEach(p=>{ const el = document.getElementById(p); if(el) el.style.display='none'; });
-  // show requested
+/* ===== Navigation ===== */
+function navigate(page){
+  // show/hide
+  ['home','trade','payments','verify'].forEach(p=>{ const el=document.getElementById(p); if(el) el.style.display='none'; });
   const el = document.getElementById(page);
-  if(el) el.style.display = 'block';
-  // set active tab styling
-  document.querySelectorAll('.tabbtn').forEach(b=>{ b.classList.toggle('active', b.dataset.page===page); });
-  // ensure user is logged in if trying to see protected pages
-  const s = getSession();
-  if(!s && page !== 'home'){
-    // show auth if not logged
-    authArea.style.display = 'block';
-    appArea.style.display = 'none';
-    showAlert('Please login to access this page', 'error');
-    return;
+  if(!el) return;
+  // protection: trade/payments/verify require login
+  if(['trade','payments','verify'].includes(page) && !getSession()){
+    showAlert('Please login to access this page', 'error'); return;
   }
+  el.style.display='block';
+  // highlight nav
+  document.querySelectorAll('#nav button').forEach(b=> b.classList.toggle('active', b.dataset.page === page));
 }
 
-/* ===== Alerts ===== */
-function showAlert(text, type='info', timeout=4500){
-  const wrap = document.getElementById('alerts');
-  const el = document.createElement('div'); el.className = 'alert';
-  el.innerHTML = `<div style="font-weight:800">${text}</div><div class="muted xs">${type}</div>`;
-  wrap.appendChild(el);
-  setTimeout(()=> el.remove(), timeout);
-}
+/* ===== Charting setup (Lightweight Charts for candlesticks) ===== */
+const chartContainer = document.getElementById('candlestick');
+const chart = LightweightCharts.createChart(chartContainer, {
+  layout: { backgroundColor: '#040404', textColor: '#d1d1d1' },
+  grid: { vertLines: { color: 'rgba(255,255,255,0.03)' }, horzLines: { color: 'rgba(255,255,255,0.02)' } },
+  rightPriceScale: { borderColor: 'rgba(255,255,255,0.04)' },
+  timeScale: { borderColor: 'rgba(255,255,255,0.04)' },
+});
+const candleSeries = chart.addCandlestickSeries({ upColor: '#2bd17d', downColor: '#ff6b6b', borderDownColor: '#ff6b6b', borderUpColor: '#2bd17d' });
+const lineSeries = chart.addLineSeries({ color: 'rgba(227,6,19,0.95)', lineWidth: 2, priceLineVisible:false });
+let useCandles = true;
 
-/* ===========================
-   Demo trading engine (front-end)
-   - demoState tracks balance, orders, history
-   - orders array contains pending & open positions
-   - pending orders execute after 8s (simulated)
-   =========================== */
+/* Initial asset data (small mock OHLC series) */
+const sampleOHLC = (base, count=60, volatility=0.003) => {
+  const arr = [];
+  let t = Date.now() - count*60*1000;
+  let price = base;
+  for(let i=0;i<count;i++){
+    const open = +(price*(1 + (Math.random()-0.5)*volatility)).toFixed(4);
+    const close = +(open*(1 + (Math.random()-0.5)*volatility)).toFixed(4);
+    const high = Math.max(open, close) * (1 + Math.random()*0.002);
+    const low = Math.min(open, close) * (1 - Math.random()*0.002);
+    arr.push({ time: Math.floor(t/1000), open: +open.toFixed(4), high: +high.toFixed(4), low: +low.toFixed(4), close: +close.toFixed(4) });
+    price = close;
+    t += 60*1000;
+  }
+  return arr;
+};
+
+/* Assets & state */
 const ASSETS = {
-  EURUSD:{ symbol:'EUR/USD', base:1.0864, spread:0.8, type:'forex' },
-  GBPUSD:{ symbol:'GBP/USD', base:1.2741, spread:1.0, type:'forex' },
-  BTCUSD:{ symbol:'BTC/USD', base:37850, spread:50, type:'crypto' },
-  XAUUSD:{ symbol:'XAU/USD', base:1840.30, spread:1.8, type:'commodity' },
-  USDJPY:{ symbol:'USD/JPY', base:147.82, spread:2, type:'forex' }
+  EURUSD: { symbol: 'EUR/USD', base: 1.0864, spread: 0.8, type:'forex', ohlc: sampleOHLC(1.0864) },
+  GBPUSD: { symbol: 'GBP/USD', base: 1.2741, spread: 1.0, type:'forex', ohlc: sampleOHLC(1.2741) },
+  BTCUSD: { symbol: 'BTC/USD', base: 37850, spread: 50, type:'crypto', ohlc: sampleOHLC(37850,60,0.01) },
+  XAUUSD: { symbol: 'XAU/USD', base: 1840.30, spread: 1.8, type:'commodity', ohlc: sampleOHLC(1840.30) },
+  USDJPY: { symbol: 'USD/JPY', base: 147.82, spread: 2, type:'forex', ohlc: sampleOHLC(147.82) },
 };
 let currentAsset = 'EURUSD';
 
-/* Chart.js setup */
-const ctx = document.getElementById('chartCanvas').getContext('2d');
-let labels = [], chartData = [];
-for(let i=30;i>=0;i--){ labels.push(new Date(Date.now()-i*60000).toLocaleTimeString().slice(0,5)); chartData.push(ASSETS[currentAsset].base); }
-const chart = new Chart(ctx, {
-  type:'line',
-  data:{ labels, datasets:[{ data: chartData, borderColor:'rgba(227,6,19,0.95)', backgroundColor:'rgba(227,6,19,0.06)', tension:0.25, pointRadius:0 }] },
-  options:{ responsive:true, plugins:{ legend:{ display:false } }, scales:{ x:{ display:true }, y:{ display:true } } }
-});
+/* Render initial chart */
+function renderChartForAsset(key){
+  const a = ASSETS[key];
+  if(!a) return;
+  currentAsset = key;
+  document.getElementById('assetName').innerText = a.symbol;
+  document.getElementById('panelAsset').innerText = a.symbol;
+  document.getElementById('assetSpread').innerText = a.spread;
+  // set candle data
+  candleSeries.setData(a.ohlc);
+  // line series as closes
+  lineSeries.setData(a.ohlc.map(d => ({ time:d.time, value: d.close })));
+}
+renderChartForAsset('EURUSD');
 
-/* Push simulated points */
+/* Chart update loop: push new point every 3-4s */
 setInterval(()=>{
-  // small movement on all assets
+  // update all assets OHLC slightly to simulate real feed
   Object.keys(ASSETS).forEach(k=>{
     const a = ASSETS[k];
-    const vol = a.type === 'crypto' ? 0.02 : 0.0025;
-    a.base = +(a.base * (1 + (Math.random()-0.5)*vol)).toFixed(a.type === 'crypto' ? 0 : 4);
+    const last = a.ohlc[a.ohlc.length-1];
+    // create new candle
+    const baseMove = (Math.random()-0.5) * (a.type==='crypto' ? 0.01 : 0.0025);
+    const open = last.close;
+    const close = +(open * (1 + baseMove)).toFixed(a.type==='crypto'?0:4);
+    const high = Math.max(open, close) * (1 + Math.random()*0.002);
+    const low = Math.min(open, close) * (1 - Math.random()*0.001);
+    const next = { time: Math.floor((Date.now())/1000), open:+open.toFixed(4), high:+high.toFixed(4), low:+low.toFixed(4), close:+close.toFixed(4) };
+    a.ohlc.push(next);
+    if(a.ohlc.length>240) a.ohlc.shift();
   });
-  // update chart with current asset's base
-  const next = ASSETS[currentAsset].base;
-  chart.data.labels.push(new Date().toLocaleTimeString().slice(0,5));
-  chart.data.datasets[0].data.push(next);
-  if(chart.data.labels.length>60){ chart.data.labels.shift(); chart.data.datasets[0].data.shift(); }
-  chart.update();
-  evaluateOpenPnl(); renderOrders(); renderRecent(); updateAccountUI();
+
+  // re-render currently visible asset
+  renderChartForAsset(currentAsset);
+
+  // evaluate PnL on open positions
+  evaluateOpenPnL();
 }, 3500);
 
-/* Utility format */
-function formatPrice(v,k){ if(k==='BTCUSD'||k==='XAUUSD') return '$' + Number(v).toLocaleString(); if(k==='USDJPY') return v.toFixed(2); return v.toFixed(4); }
-
-/* Change asset */
-function changeAsset(val){
-  currentAsset = val;
-  document.getElementById('assetTitle').innerText = ASSETS[val].symbol;
-  document.getElementById('panelAsset').innerText = ASSETS[val].symbol;
-  document.getElementById('spread').innerText = ASSETS[val].spread;
-  // adjust chart base quick reset
-  chart.data.datasets[0].data = chart.data.datasets[0].data.map(()=>ASSETS[val].base);
-  chart.update();
-  showAlert('Switched to ' + ASSETS[val].symbol, 'info');
+/* Chart type switcher */
+function switchChart(type){
+  useCandles = (type==='candles');
+  candleSeries.applyOptions({ visible: useCandles });
+  lineSeries.applyOptions({ visible: !useCandles });
 }
 
-/* Demo order lifecycle */
-function quickOrder(side){
-  const size = parseFloat(document.getElementById('tradeSize').value) || 1;
-  const lev = parseInt(document.getElementById('tradeLev').value) || 50;
+/* Candle indicators toggle (mock, visual only) */
+function toggleIndicators(){ showAlert('Indicators toggled (mock)', 'info'); }
+
+/* Asset change from dropdown */
+function changeAsset(v){ renderChartForAsset(v); }
+
+/* ===== Demo order engine =====
+   Orders: pending (countdown), open (pnl updates), history
+   margin calc is simplified
+*/
+function placeQuick(side){
+  const size = parseFloat(document.getElementById('size').value) || 1;
+  const lev = parseInt(document.getElementById('leverage').value) || 50;
   createPending(side, size, lev);
 }
 function placeTrade(side){
@@ -554,61 +597,58 @@ function placeTrade(side){
   const lev = parseInt(document.getElementById('panelLev').value) || 50;
   createPending(side, size, lev);
 }
-
-function createPending(side,size,lev){
-  const entry = ASSETS[currentAsset].base;
-  // simplistic margin calculation
+function createPending(side, size, lev){
+  const asset = ASSETS[currentAsset];
+  const entry = asset.ohlc[asset.ohlc.length-1].close;
   const margin = Math.max(50, Math.round((size * (currentAsset==='BTCUSD' ? entry/100 : entry)) / lev));
-  if(demoState.balance < margin){ showAlert('Insufficient demo balance for margin KES ' + margin, 'error'); return; }
+  if(demoState.balance < margin){ showAlert('Insufficient balance for margin KES ' + margin, 'error'); return; }
   demoState.balance -= margin;
-  const pending = { id:'p'+Date.now(), side, symbol: currentAsset, size, lev, entry, margin, status:'pending', countdown:8, created:Date.now() };
-  demoState.orders.push(pending);
-  saveDemo();
-  showAlert(`${side.toUpperCase()} pending — will execute in ~8s`, 'info');
-  // start countdown
-  const intId = setInterval(()=>{
-    pending.countdown--;
-    if(pending.countdown<=0){
-      clearInterval(intId);
-      executePending(pending.id);
+  const pending = { id:'p'+Date.now(), side, symbol: currentAsset, size, lev, entry, margin, status:'pending', countdown:8, created: Date.now() };
+  demoState.orders.push(pending); saveDemo(); showAlert(`${side.toUpperCase()} pending — will execute in ~8s`, 'info');
+  // countdown
+  const id = setInterval(()=>{
+    const idx = demoState.orders.findIndex(o=>o.id===pending.id);
+    if(idx === -1){ clearInterval(id); return; }
+    demoState.orders[idx].countdown--;
+    if(demoState.orders[idx].countdown <= 0){
+      clearInterval(id); executePending(pending.id);
     }
     saveDemo();
   },1000);
 }
-
 function executePending(id){
   const idx = demoState.orders.findIndex(o=>o.id===id && o.status==='pending');
   if(idx === -1) return;
   const p = demoState.orders[idx];
-  const slippage = (Math.random()-0.5)*0.0004; // small slippage
-  const execPrice = +(ASSETS[p.symbol].base * (1 + slippage)).toFixed(p.symbol==='BTCUSD'?0:4);
-  const position = { id:'pos'+Date.now(), side:p.side, symbol:p.symbol, size:p.size, lev:p.lev, entry:execPrice, margin:p.margin, status:'open', openedAt:new Date().toLocaleTimeString(), pnl:0 };
+  const asset = ASSETS[p.symbol];
+  const slippage = (Math.random()-0.5)*(asset.type==='crypto'?0.001:0.0004);
+  const execPrice = +(asset.ohlc[asset.ohlc.length-1].close * (1+slippage)).toFixed(asset.type==='crypto'?0:4);
+  const position = { id:'pos'+Date.now(), side:p.side, symbol:p.symbol, size:p.size, lev:p.lev, entry:execPrice, margin:p.margin, status:'open', openedAt:new Date().toLocaleString(), pnl:0 };
   // replace pending with position
   demoState.orders.splice(idx,1);
   demoState.orders.push(position);
   saveDemo();
   showAlert(`${position.side.toUpperCase()} executed @ ${position.entry}`, 'success');
-  renderOrders(); renderRecent(); updateAccountUI();
 }
-
-function evaluateOpenPnl(){
+function evaluateOpenPnL(){
   let total = 0;
   demoState.orders.forEach(o=>{
     if(o.status !== 'open') return;
-    const current = ASSETS[o.symbol].base;
-    const sign = o.side==='buy'?1:-1;
-    const pnl = Math.round((current - o.entry) * o.size * 1000 * sign); // simplified
+    const asset = ASSETS[o.symbol];
+    const current = asset.ohlc[asset.ohlc.length-1].close;
+    const sign = o.side === 'buy' ? 1 : -1;
+    const pnl = Math.round((current - o.entry) * o.size * 1000 * sign);
     o.pnl = pnl;
     total += pnl;
   });
-  // show in UI
-  document.getElementById('accPL').innerText = 'KES ' + Math.round(total);
-  document.getElementById('accBalance').innerText = 'KES ' + Math.round(demoState.balance);
+  document.getElementById('openPL').innerText = 'KES ' + Math.round(total);
+  document.getElementById('balance').innerText = 'KES ' + Math.round(demoState.balance);
 }
 
+/* Close all & refunds & history */
 function closeAll(){
-  if(demoState.orders.length === 0){ showAlert('No positions', 'info'); return; }
-  let realized = 0;
+  if(demoState.orders.length === 0){ showAlert('No positions to close', 'info'); return; }
+  let realized=0;
   const remaining = [];
   demoState.orders.forEach(o=>{
     if(o.status === 'open'){
@@ -616,7 +656,6 @@ function closeAll(){
       demoState.balance += o.margin + (o.pnl || 0);
       demoState.history.push({ side:o.side, symbol:o.symbol, size:o.size, pnl:o.pnl, closedAt:new Date().toLocaleString() });
     } else if(o.status === 'pending'){
-      // cancel pending and refund
       demoState.balance += o.margin;
       demoState.history.push({ side:o.side, symbol:o.symbol, remark:'pending cancelled', closedAt:new Date().toLocaleTimeString() });
     }
@@ -626,107 +665,112 @@ function closeAll(){
   showAlert('All positions closed. Realized KES ' + realized, 'success');
 }
 
-/* Render orders & recent */
+/* Render orders / recent */
 function renderOrders(){
-  const el = document.getElementById('ordersList'); el.innerHTML = '';
-  if(demoState.orders.length === 0){ el.innerHTML = '<div class="muted xs">No open positions or pending</div>'; return; }
-  // show newest first
+  const el = document.getElementById('ordersArea'); el.innerHTML = '';
+  if(demoState.orders.length === 0){ el.innerHTML = '<div class="muted small">No open positions or pending orders</div>'; return; }
   demoState.orders.slice().reverse().forEach(o=>{
-    const div = document.createElement('div'); div.className = 'order';
+    const node = document.createElement('div'); node.className='order';
     if(o.status === 'pending'){
-      div.innerHTML = `<div><strong>${o.side.toUpperCase()} (pending)</strong><div class="muted xs">Asset: ${ASSETS[o.symbol].symbol} • Size ${o.size} • Margin KES ${o.margin}</div></div><div style="text-align:right"><div class="muted xs">Exec in ${o.countdown}s</div></div>`;
+      node.innerHTML = `<div><strong>${o.side.toUpperCase()} (pending)</strong><div class="muted small">Asset: ${ASSETS[o.symbol].symbol} • Size:${o.size} • Margin KES ${o.margin}</div></div><div style="text-align:right"><div class="muted small">Exec in ${o.countdown}s</div></div>`;
     } else {
-      div.innerHTML = `<div><strong>${o.side.toUpperCase()}</strong><div class="muted xs">Entry: ${o.entry} • Size ${o.size}</div></div><div style="text-align:right"><div style="font-weight:800">${o.pnl? 'KES '+o.pnl : 'KES 0'}</div><div class="muted xs">${o.openedAt||''}</div></div>`;
+      node.innerHTML = `<div><strong>${o.side.toUpperCase()}</strong><div class="muted small">Entry: ${o.entry} • Size:${o.size}</div></div><div style="text-align:right"><div style="font-weight:900">${o.pnl? 'KES '+o.pnl : 'KES 0'}</div><div class="muted small">${o.openedAt}</div></div>`;
     }
-    el.appendChild(div);
+    el.appendChild(node);
   });
 }
-
-function renderRecent(){
-  const el = document.getElementById('recentList'); el.innerHTML = '';
-  if(!demoState.history.length){ el.innerHTML = '<div class="muted xs">No history yet</div>'; return; }
+function renderRecentList(){
+  const el = document.getElementById('recent'); el.innerHTML = '';
+  if(!demoState.history || demoState.history.length === 0){ el.innerHTML = '<div class="muted small">No history</div>'; return; }
   demoState.history.slice().reverse().slice(0,8).forEach(h=>{
     const d = document.createElement('div'); d.className='order';
-    d.innerHTML = `<div><strong>${h.side||''} ${h.symbol||''}</strong><div class="muted xs">${h.closedAt||''}</div></div><div style="text-align:right"><div class="muted xs">${h.pnl? 'KES '+h.pnl : (h.remark||'')}</div></div>`;
+    d.innerHTML = `<div><strong>${h.side || ''} ${h.symbol || ''}</strong><div class="muted small">${h.closedAt || ''}</div></div><div style="text-align:right"><div class="muted small">${h.pnl? 'KES '+h.pnl : (h.remark||'')}</div></div>`;
     el.appendChild(d);
   });
 }
 
-/* Deposit & verify (demo) */
-function depositDialog(){
+/* Deposit mock */
+function deposit(){
   const v = parseFloat(prompt('Enter deposit amount (KES)', '1000'));
-  if(!v || isNaN(v) || v<=0) { showAlert('Invalid amount', 'error'); return; }
+  if(!v || isNaN(v) || v<=0){ showAlert('Invalid amount', 'error'); return; }
   demoState.balance += v; saveDemo();
-  showAlert('Demo deposit KES ' + v, 'success');
+  showAlert('Deposited KES ' + v, 'success');
 }
 
-function simulateVerify(){
-  // For demo: credit fixed amount
-  const v = parseFloat(prompt('Enter amount to credit after verification (KES)', '1000'));
-  if(!v || isNaN(v) || v<=0) return;
-  demoState.balance += v; saveDemo();
-  showAlert('Verified — credited KES ' + v, 'success');
+/* Reset demo */
+function resetDemo(){
+  if(!confirm('Reset demo account?')) return;
+  demoState = { balance:10000, orders:[], history:[] };
+  saveDemo();
+  showAlert('Demo reset', 'info');
 }
-
-/* Payments helpers */
-function copyTill(){ navigator.clipboard?.writeText('3675058'); showAlert('Till 3675058 copied', 'info'); }
-function openWhats(){ window.open('https://wa.me/254796518099', '_blank'); }
 
 /* Export history */
 function exportHistory(){
-  const blob = new Blob([JSON.stringify(demoState, null, 2)], { type:'application/json' });
+  const blob = new Blob([JSON.stringify(demoState,null,2)], { type:'application/json' });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = 'deriv_trade_demo_history.json'; a.click(); URL.revokeObjectURL(url);
+  const a = document.createElement('a'); a.href = url; a.download = 'deriv_trade_history.json'; a.click(); URL.revokeObjectURL(url);
   showAlert('Export ready', 'info');
 }
 
-/* Save & update UI */
-function saveAndRender(){ localStorage.setItem(DEMO_STATE_KEY, JSON.stringify(demoState)); updateAccountUI(); renderOrders(); renderRecent(); }
-function updateAccountUI(){
-  document.getElementById('accBalance').innerText = 'KES ' + Math.round(demoState.balance);
-  document.getElementById('panelAsset').innerText = ASSETS[currentAsset].symbol;
-  document.getElementById('assetTitle').innerText = ASSETS[currentAsset].symbol;
-  document.getElementById('spread').innerText = ASSETS[currentAsset].spread;
-  document.getElementById('welcomeUser').innerText = (getSession() && getSession().username) ? 'Hi, ' + getSession().username : '';
-  logoutBtn.style.display = getSession() ? 'inline-block' : 'none';
+/* Order book / tools (mock) */
+function openOrderBook(){ alert('Order Book: mock preview — real orderbook requires a live feed.'); }
+function openCalculator(){ alert('Profit calculator: mock. Use real formulas when integrating with a backend.'); }
+function openSettings(){ alert('Settings panel (mock)'); }
+
+/* Payment helpers */
+function copyTill(){ navigator.clipboard?.writeText('3675058'); showAlert('Till copied: 3675058', 'info'); }
+function openWhats(){ window.open('https://wa.me/254796518099', '_blank'); }
+
+/* KYC (mock) */
+function uploadID(){
+  const f = document.getElementById('idFile').files[0];
+  if(!f){ showAlert('Choose a file first', 'error'); return; }
+  localStorage.setItem('deriv_trade_kyc_id', f.name + ' (mock)'); showAlert('ID uploaded (mock)', 'success'); document.getElementById('kycStatus').innerText = 'ID uploaded';
+}
+function uploadAddress(){
+  const f = document.getElementById('addrFile').files[0];
+  if(!f){ showAlert('Choose a file first', 'error'); return; }
+  localStorage.setItem('deriv_trade_kyc_addr', f.name + ' (mock)'); showAlert('Address uploaded (mock)', 'success'); document.getElementById('kycStatus').innerText = 'Address uploaded';
+}
+function simulateKyc(status){
+  document.getElementById('kycStatus').innerText = status === 'approved' ? 'KYC approved (mock)' : 'KYC rejected (mock)';
+  showAlert('KYC status: ' + status, status === 'approved' ? 'success' : 'error');
 }
 
-/* Save demo state initially */
+/* Account UI update */
+function updateAccountUI(){
+  document.getElementById('balance').innerText = 'KES ' + Math.round(demoState.balance);
+  const s = getSession(); if(s && s.username){ userWelcome.innerText = 'Hi, ' + s.username; logoutBtn.style.display='inline-block'; } else { userWelcome.innerText=''; logoutBtn.style.display='none'; }
+}
+
+/* Save demo initially */
 saveDemo();
 
-/* Helper functions used earlier */
-function getUsers(){ return JSON.parse(localStorage.getItem(USERS_KEY) || '{}'); }
-function saveUsers(u){ localStorage.setItem(USERS_KEY, JSON.stringify(u)); }
-function getSession(){ return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); }
-function setSession(u){ localStorage.setItem(SESSION_KEY, JSON.stringify({ username:u, ts: Date.now() })); }
-function clearSession(){ localStorage.removeItem(SESSION_KEY); }
-
-/* For compatibility with earlier functions used in UI */
-function saveDemoState(){ saveDemo(); }
-function resetDemo(){ if(confirm('Reset demo data?')){ demoState = { balance:10000, orders:[], history:[] }; saveDemo(); showAlert('Demo reset', 'info'); } }
-
-// Expose some functions to buttons globally
-window.showPage = showPage;
-window.logout = logout;
-window.depositDialog = depositDialog;
-window.exportHistory = exportHistory;
+/* Expose some functions globally for buttons */
+window.navigate = navigate;
+window.login = login;
+window.register = register;
+window.quickDemo = quickDemo;
+window.autofill = autofill;
+window.deposit = deposit;
 window.resetDemo = resetDemo;
+window.placeQuick = placeQuick;
+window.placeTrade = placeTrade;
+window.closeAll = closeAll;
+window.exportHistory = exportHistory;
 window.copyTill = copyTill;
 window.openWhats = openWhats;
-window.simulateVerify = simulateVerify;
-window.quickOrder = quickOrder;
-window.placeTrade = placeTrade;
-window.quickDemo = quickDemo;
+window.uploadID = uploadID;
+window.uploadAddress = uploadAddress;
+window.simulateKyc = simulateKyc;
+window.openOrderBook = openOrderBook;
+window.openCalculator = openCalculator;
+window.openSettings = openSettings;
 
-/* Set year in footer */
+/* Year footer */
 document.getElementById('year').innerText = new Date().getFullYear();
-
-/* If user is logged in by the time page loads, init app */
-if(getSession()){ initApp(); } else { /* show auth */ }
-
-/* initial render for orders/recent */
-renderOrders(); renderRecent(); updateAccountUI();
 
 </script>
 </body>
-  </html>
+</html>
