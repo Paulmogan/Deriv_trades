@@ -3,576 +3,730 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Deriv_Trade — Demo Dashboard (Deriv-style)</title>
-<meta name="description" content="Deriv_Trade demo dashboard - Deriv-style sidebar, demo trading, M-Pesa Till 3675058." />
-<!-- Chart.js -->
+<title>Deriv_Trade — Demo (All-in-one)</title>
+<meta name="description" content="Deriv_Trade demo SPA. Login/Register, Home, Trade, Payments — single index.html. M-Pesa Till 3675058." />
+<!-- Chart.js CDN -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
+  /* ===== Theme variables ===== */
   :root{
-    --bg:#000;
-    --panel:#0d0d0f;
-    --accent:#e30613;
-    --muted:#bdbdbd;
+    --bg: #000;
+    --panel: #0d0d0f;
+    --accent: #e30613;
+    --muted: #bfbfbf;
     --glass: rgba(255,255,255,0.02);
-    --success:#2bd17d;
-    --danger:#ff5b5b;
-    --sidebar-w: 260px;
+    --success: #2bd17d;
+    --danger: #ff5b5b;
+    --radius: 12px;
+    --maxw: 1200px;
   }
+
   *{box-sizing:border-box}
-  html,body{height:100%;margin:0;font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;background:var(--bg);color:#fff;-webkit-font-smoothing:antialiased}
-  a{color:inherit;text-decoration:none}
+  body{margin:0;font-family:Inter,system-ui,Arial;background:linear-gradient(180deg,#000,#070707);color:#fff;-webkit-font-smoothing:antialiased;min-height:100vh}
+  a{color:inherit}
 
-  /* layout */
-  .app{display:flex;min-height:100vh}
-  /* sidebar */
-  .sidebar{
-    width:var(--sidebar-w);
-    background:linear-gradient(180deg,#070707,#0b0b0b);
-    border-right:1px solid rgba(255,0,0,0.04);
-    padding:18px;
-    display:flex;flex-direction:column;gap:18px;
-  }
-  .brand{display:flex;align-items:center;gap:12px}
-  .logo{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#9a0000);display:flex;align-items:center;justify-content:center;font-weight:900}
-  .brand h2{margin:0;font-size:16px;color:var(--accent)}
-  .menu{margin-top:8px;display:flex;flex-direction:column;gap:6px}
-  .menu button{background:transparent;border:none;color:#fff;text-align:left;padding:10px;border-radius:8px;cursor:pointer;font-weight:700}
-  .menu button:hover{background:rgba(255,0,0,0.06)}
-  .menu .active{background:rgba(227,6,19,0.09);border-left:4px solid var(--accent);padding-left:14px}
+  /* ===== Layout ===== */
+  .wrap{max-width:var(--maxw);margin:18px auto;padding:0 16px}
+  header{display:flex;align-items:center;justify-content:space-between;padding:12px;border-bottom:3px solid var(--accent);background:linear-gradient(90deg,#070707,#0b0b0b);border-radius:8px}
+  .brand{display:flex;gap:12px;align-items:center}
+  .logo{width:46px;height:46px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#9a0000);display:flex;align-items:center;justify-content:center;font-weight:900}
+  .brand h1{margin:0;font-size:18px;color:var(--accent)}
+  nav{display:flex;gap:8px;align-items:center}
+  .tabbtn{background:transparent;border:none;padding:8px 12px;border-radius:8px;color:#fff;font-weight:700;cursor:pointer}
+  .tabbtn.active{background:rgba(227,6,19,0.09);border-left:3px solid var(--accent);padding-left:14px}
+  .small{color:var(--muted);font-size:13px}
+  .btn{background:var(--accent);color:#fff;padding:8px 12px;border-radius:8px;border:none;cursor:pointer;font-weight:800}
+  .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)}
+  .btn.red{background:#c40013}
+  .top-right{display:flex;gap:8px;align-items:center}
 
-  .sidebar .card{background:#0b0b0b;padding:12px;border-radius:10px;border:1px solid #121212}
+  /* ===== Main area ===== */
+  .main-grid{display:grid;grid-template-columns:1fr 360px;gap:18px;margin-top:18px}
+  @media(max-width:980px){ .main-grid{grid-template-columns:1fr} header{flex-direction:column;align-items:flex-start;gap:10px} .top-right{width:100%;justify-content:flex-end} }
 
-  /* main area */
-  .main{flex:1;display:flex;flex-direction:column}
-  .topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid rgba(255,0,0,0.03)}
-  .top-ticker{display:flex;gap:12px;align-items:center;overflow:auto}
-  .tick{padding:8px;border-radius:8px;background:#0b0b0b;min-width:120px;border-left:4px solid rgba(227,6,19,0.9)}
-  .tick .s{font-weight:800}
-  .tick .p{color:var(--muted);margin-top:6px}
+  /* ===== Panels ===== */
+  .panel{background:linear-gradient(180deg, rgba(255,255,255,0.01), var(--glass));padding:14px;border-radius:var(--radius);border:1px solid #151515}
+  .card{background:var(--panel);padding:12px;border-radius:10px;border:1px solid #121212}
 
-  /* workspace */
-  .workspace{display:grid;grid-template-columns:1fr 360px;gap:18px;padding:18px}
-  @media (max-width:980px){ .workspace{grid-template-columns:1fr} .sidebar{display:none} }
+  /* ===== Login area ===== */
+  .auth-wrap{display:flex;gap:24px;align-items:stretch;justify-content:center;margin-top:30px}
+  .auth-left{flex:1;min-width:260px}
+  .auth-right{width:420px}
+  .tab{display:flex;gap:8px;margin-bottom:12px}
+  .input{width:100%;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:#080808;color:#fff}
+  .auth-note{background:#0a0a0a;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);color:var(--muted)}
+  .center{display:flex;align-items:center;justify-content:center}
 
-  /* center */
-  .panel{background:linear-gradient(180deg, rgba(255,255,255,0.01), var(--glass));padding:12px;border-radius:12px;border:1px solid #141414}
-  .chart-wrap{height:440px;border-radius:10px;padding:8px;background:#060606;border:1px solid #111}
-  .controls{display:flex;gap:12px;align-items:center;margin-top:10px}
-  .select, .input{background:#0b0b0b;border:1px solid rgba(255,0,0,0.06);padding:10px;border-radius:8px;color:#fff}
-
-  /* trade panel */
-  .trade-panel{position:relative}
-  .trade-panel .panel{position:sticky;top:18px}
-  .trade-panel h4{color:var(--accent);margin:0}
-  .trade-row{display:flex;gap:8px;align-items:center;margin-top:10px}
-  .btn{background:var(--accent);color:#fff;padding:10px 12px;border-radius:8px;border:none;cursor:pointer;font-weight:800}
-  .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
-  .btn.sell{background:#222;border:1px solid rgba(255,255,255,0.03)}
-  .small{font-size:13px;color:var(--muted)}
-
-  /* orders / history */
-  .orders{margin-top:12px;max-height:200px;overflow:auto}
+  /* ===== Trade layout ===== */
+  .chart-wrap{height:400px;border-radius:10px;padding:8px;background:#060606;border:1px solid #111}
+  .controls{display:flex;gap:8px;align-items:center;margin-top:12px;flex-wrap:wrap}
+  .orders{max-height:280px;overflow:auto;margin-top:12px}
   .order{padding:10px;border-radius:8px;background:#0b0b0b;border-left:4px solid rgba(227,6,19,0.9);margin-bottom:8px;display:flex;justify-content:space-between;gap:8px}
-  .order .meta{color:var(--muted);font-size:13px}
+  .muted{color:var(--muted)}
 
-  /* footer area */
-  footer{padding:12px 18px;border-top:1px solid rgba(255,0,0,0.03);color:var(--muted);text-align:center}
+  /* ===== Payments ===== */
+  .pay-icons{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:12px}
+  .pay-icon{width:64px;height:64px;background:#fff;padding:6px;border-radius:8px;display:flex;align-items:center;justify-content:center;filter:grayscale(1) contrast(0.9) brightness(0.8)}
+  .pay-note{font-size:14px;color:var(--muted);margin-top:8px}
 
-  /* alerts */
-  .alerts{position:fixed;right:18px;bottom:18px;display:flex;flex-direction:column;gap:8px;z-index:200}
-  .alert{background:#111;padding:10px 12px;border-radius:8px;border-left:4px solid var(--accent);box-shadow:0 10px 30px rgba(0,0,0,0.6);min-width:220px}
+  /* ===== Alerts ===== */
+  .alerts{position:fixed;right:18px;bottom:18px;display:flex;flex-direction:column;gap:8px;z-index:999}
+  .alert{padding:10px 12px;border-radius:8px;background:#111;border-left:4px solid var(--accent);min-width:220px;box-shadow:0 12px 40px rgba(0,0,0,0.6)}
 
-  /* responsive tweaks */
-  @media (max-width:600px){
-    .topbar{flex-direction:column;align-items:flex-start;gap:10px}
-  }
+  /* ===== Footer ===== */
+  footer{margin-top:22px;padding:12px;text-align:center;color:var(--muted)}
+
+  /* small */
+  .xs{font-size:13px;color:var(--muted)}
 </style>
 </head>
 <body>
-<div class="app">
+  <div class="wrap">
 
-  <!-- SIDEBAR -->
-  <aside class="sidebar" id="sidebar">
-    <div class="brand">
-      <div class="logo">DT</div>
-      <div>
-        <h2>Deriv_Trade</h2>
-        <div class="small">Demo • Till 3675058</div>
+    <!-- HEADER -->
+    <header>
+      <div class="brand">
+        <div class="logo">DT</div>
+        <div>
+          <h1>Deriv_Trade</h1>
+          <div class="small">Black & Red • Demo Trading</div>
+        </div>
       </div>
-    </div>
 
-    <div class="menu" id="menu">
-      <button class="active" data-view="dashboard" onclick="setView('dashboard')">Dashboard</button>
-      <button data-view="trade" onclick="setView('trade')">Trade</button>
-      <button data-view="markets" onclick="setView('markets')">Markets</button>
-      <button data-view="payments" onclick="setView('payments')">Payments</button>
-      <button data-view="account" onclick="setView('account')">Account</button>
-      <button data-view="help" onclick="setView('help')">Help</button>
-    </div>
+      <div class="top-right">
+        <nav id="mainNav" style="display:flex;gap:6px;align-items:center">
+          <button class="tabbtn" data-page="home" onclick="showPage('home')">Home</button>
+          <button class="tabbtn" data-page="trade" onclick="showPage('trade')">Trade</button>
+          <button class="tabbtn" data-page="payments" onclick="showPage('payments')">Payments</button>
+        </nav>
 
-    <div class="sidebar-footer" style="margin-top:auto">
-      <div class="card">
+        <div id="userControls" style="display:flex;gap:8px;align-items:center;margin-left:12px">
+          <div class="xs" id="welcomeUser"></div>
+          <button class="btn ghost" id="logoutBtn" onclick="logout()" style="display:none">Logout</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- AUTH GATE: Login / Register (shows when not logged) -->
+    <div id="authArea" style="margin-top:18px"></div>
+
+    <!-- APP CONTENT -->
+    <main id="appArea" style="display:none;margin-top:18px">
+      <div id="home" class="panel" style="display:none">
+        <div style="display:flex;justify-content:space-between;gap:12px;align-items:center">
+          <div>
+            <h2 style="color:var(--accent);margin:0">Welcome to Deriv_Trade</h2>
+            <div class="muted">Demo environment. Practice trading risk-free.</div>
+          </div>
+          <div>
+            <button class="btn" onclick="showPage('trade')">Open Trade</button>
+            <button class="btn ghost" onclick="showPage('payments')">Deposit</button>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:16px;margin-top:16px;flex-wrap:wrap">
+          <div class="card" style="flex:1;min-width:260px">
+            <div style="font-weight:800">M-Pesa Till</div>
+            <div style="color:var(--accent);font-weight:900;font-size:20px">3675058</div>
+            <div class="muted" style="margin-top:6px">After payment send transaction ID via WhatsApp</div>
+          </div>
+
+          <div class="card" style="flex:2;min-width:280px">
+            <h3 style="color:var(--accent);margin:0">Features</h3>
+            <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+              <div class="card muted" style="min-width:160px">Demo Trading Engine</div>
+              <div class="card muted" style="min-width:160px">Simulated Live Chart</div>
+              <div class="card muted" style="min-width:160px">Easy Payments</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="trade" style="display:none">
+        <div class="main-grid">
+          <!-- CENTER -->
+          <section>
+            <div class="panel">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <div>
+                  <div id="assetTitle" style="font-weight:800">EUR/USD</div>
+                  <div class="xs muted">Forex • Major</div>
+                </div>
+                <div class="xs">Spread: <strong id="spread">0.8</strong></div>
+              </div>
+
+              <div class="chart-wrap" style="margin-top:12px">
+                <canvas id="chartCanvas"></canvas>
+              </div>
+
+              <div class="controls">
+                <select id="assetSelect" class="input" onchange="changeAsset(this.value)">
+                  <option value="EURUSD">EUR/USD</option>
+                  <option value="GBPUSD">GBP/USD</option>
+                  <option value="BTCUSD">BTC/USD</option>
+                  <option value="XAUUSD">XAU/USD</option>
+                  <option value="USDJPY">USD/JPY</option>
+                </select>
+
+                <input id="tradeSize" class="input" type="number" value="1" min="0.01" step="0.01" style="width:110px" />
+                <select id="tradeLev" class="input" style="width:110px">
+                  <option>10</option><option>25</option><option selected>50</option><option>100</option>
+                </select>
+
+                <button class="btn" onclick="quickOrder('buy')">Buy</button>
+                <button class="btn sell" onclick="quickOrder('sell')">Sell</button>
+
+                <div style="margin-left:auto" class="muted xs">Demo: local only</div>
+              </div>
+
+              <div class="orders" id="ordersList"></div>
+            </div>
+
+            <div class="panel" style="margin-top:12px">
+              <h4 style="color:var(--accent);margin:0">Signals (demo)</h4>
+              <div class="muted xs" style="margin-top:8px">Educational signals only.</div>
+              <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+                <div class="card" style="min-width:200px">BUY EUR/USD • TP 1.0990 • SL 1.0790</div>
+                <div class="card" style="min-width:200px">SELL XAU/USD • TP 2280 • SL 2330</div>
+              </div>
+            </div>
+
+          </section>
+
+          <!-- RIGHT -->
+          <aside>
+            <div class="panel">
+              <h4 style="margin:0;color:var(--accent)">Trade Panel</h4>
+              <div class="xs muted" style="margin-top:8px">Place demo orders — execution simulated</div>
+
+              <div style="margin-top:12px">
+                <div class="xs muted">Selected</div>
+                <div style="font-weight:900" id="panelAsset">EUR/USD</div>
+
+                <label class="xs muted" style="margin-top:8px">Size</label>
+                <input id="panelSize" class="input" type="number" value="1" step="0.01" />
+
+                <label class="xs muted" style="margin-top:8px">Leverage</label>
+                <select id="panelLev" class="input">
+                  <option>10</option><option>25</option><option selected>50</option><option>100</option>
+                </select>
+
+                <div style="display:flex;gap:8px;margin-top:10px">
+                  <button class="btn" onclick="placeTrade('buy')">Place Buy</button>
+                  <button class="btn sell" onclick="placeTrade('sell')">Place Sell</button>
+                </div>
+              </div>
+
+              <div style="margin-top:12px">
+                <h4 style="margin:0;color:var(--accent)">Account</h4>
+                <div class="xs muted" style="margin-top:8px">Balance</div>
+                <div id="accBalance" style="font-weight:900">KES 10,000</div>
+                <div class="xs muted" style="margin-top:8px">Open P/L</div>
+                <div id="accPL">KES 0</div>
+
+                <div style="margin-top:10px;display:flex;gap:8px">
+                  <button class="btn" onclick="depositDialog()">Deposit</button>
+                  <button class="btn ghost" onclick="resetDemo()">Reset</button>
+                </div>
+              </div>
+
+              <div style="margin-top:12px">
+                <h4 style="margin:0">Recent</h4>
+                <div id="recentList" class="orders"></div>
+                <div style="display:flex;gap:8px;margin-top:8px">
+                  <button class="btn ghost" onclick="exportHistory()">Export</button>
+                </div>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+
+      <div id="payments" class="panel" style="display:none">
         <div style="display:flex;justify-content:space-between;align-items:center">
           <div>
-            <div class="small">Demo Balance</div>
-            <div style="font-weight:900" id="sideBalance">KES 10,000</div>
+            <h2 style="color:var(--accent);margin:0">Payments & Deposit</h2>
+            <div class="muted xs">Preferred: M-Pesa Till (demo)</div>
           </div>
-          <div style="text-align:right">
-            <div class="small">Open P/L</div>
-            <div id="sidePL">KES 0</div>
+          <div>
+            <button class="btn" onclick="copyTill()">Copy Till</button>
+            <button class="btn ghost" onclick="openWhats()">Verify</button>
           </div>
         </div>
-        <div style="margin-top:10px;display:flex;gap:8px">
-          <button class="btn" onclick="depositDemo()">Deposit</button>
-          <button class="btn ghost" onclick="resetDemo()">Reset</button>
-        </div>
-      </div>
 
-      <div style="margin-top:12px" class="card">
-        <div class="small">Support</div>
-        <a class="btn ghost" href="https://wa.me/254796518099" target="_blank">WhatsApp</a>
-      </div>
-    </div>
-  </aside>
-
-  <!-- MAIN -->
-  <main class="main">
-    <!-- topbar -->
-    <div class="topbar">
-      <div style="display:flex;gap:18px;align-items:center">
-        <div style="display:flex;align-items:center;gap:16px">
-          <div style="font-weight:800;font-size:18px;color:var(--accent)">Deriv_Trade</div>
-          <div class="small">Black & Red Demo</div>
-        </div>
-
-        <div class="top-ticker" id="topTicker">
-          <!-- ticks injected via JS -->
-        </div>
-      </div>
-
-      <div style="display:flex;gap:12px;align-items:center">
-        <div class="small">Logged in as <strong>DemoUser</strong></div>
-        <button class="btn ghost" onclick="exportHistory()">Export</button>
-      </div>
-    </div>
-
-    <!-- workspace -->
-    <div class="workspace">
-      <!-- CENTER: Chart + controls -->
-      <section>
-        <div class="panel">
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <div>
-              <div style="font-size:18px;font-weight:800" id="assetTitle">EUR / USD</div>
-              <div class="small" id="assetSub">Forex • Major</div>
+        <div class="card" style="margin-top:12px">
+          <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+            <div style="flex:1">
+              <div class="muted">Till Number</div>
+              <div style="font-weight:900;color:var(--accent);font-size:20px">3675058</div>
+              <div class="pay-note">After payment, send transaction ID via WhatsApp for verification (demo flow).</div>
             </div>
-            <div style="display:flex;gap:12px;align-items:center">
-              <div class="small">Spread: <strong id="assetSpread">0.8</strong></div>
-              <div class="small">Leverage: <strong id="assetLev">50x</strong></div>
-            </div>
-          </div>
-
-          <div style="margin-top:12px" class="chart-wrap">
-            <canvas id="mainChart"></canvas>
-          </div>
-
-          <div class="controls" style="margin-top:12px">
-            <select id="assetSelect" class="select" onchange="changeAsset(this.value)">
-              <option value="EURUSD">EUR/USD</option>
-              <option value="GBPUSD">GBP/USD</option>
-              <option value="BTCUSD">BTC/USD</option>
-              <option value="XAUUSD">XAU/USD</option>
-              <option value="USDJPY">USD/JPY</option>
-            </select>
-
-            <div style="display:flex;gap:8px;align-items:center">
-              <input id="sizeInput" class="input" type="number" min="0.01" step="0.01" value="1" style="width:100px" />
-              <select id="leverageSelect" class="select">
-                <option>10</option><option>25</option><option selected>50</option><option>100</option>
-              </select>
-            </div>
-
-            <button class="btn" onclick="openOrder('buy')">Buy</button>
-            <button class="btn sell" onclick="openOrder('sell')">Sell</button>
-          </div>
-
-          <div class="orders" id="orderBook">
-            <!-- orders show here -->
-          </div>
-        </div>
-
-        <!-- Signals / Market news (demo) -->
-        <div style="margin-top:12px" class="panel">
-          <h4 style="color:var(--accent);margin:0">Signals & Market</h4>
-          <div class="small" style="margin-top:8px">Demo signals for learning purposes</div>
-          <div style="display:flex;gap:8px;margin-top:10px">
-            <div class="card" style="flex:1">
-              <div style="font-weight:800">BUY EUR/USD</div>
-              <div class="small">TP 1.0990 • SL 1.0790</div>
-            </div>
-            <div class="card" style="flex:1">
-              <div style="font-weight:800">SELL XAU/USD</div>
-              <div class="small">TP 2280 • SL 2330</div>
+            <div class="pay-icons">
+              <div class="pay-icon"><img src="https://upload.wikimedia.org/wikipedia/commons/6/6d/M-PESA_LOGO-01.svg" alt="M-Pesa" style="width:100%"/></div>
+              <div class="pay-icon"><img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" style="width:100%"/></div>
+              <div class="pay-icon"><img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Visa.svg" alt="Visa" style="width:100%"/></div>
+              <div class="pay-icon"><img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Mastercard-logo.png" alt="MC" style="width:100%"/></div>
             </div>
           </div>
         </div>
 
-      </section>
-
-      <!-- RIGHT: Trade panel -->
-      <aside class="trade-panel">
-        <div class="panel">
-          <h4>Trade Panel</h4>
-          <div class="small">Place demo orders — execution simulated with countdown</div>
-
-          <div style="margin-top:12px">
-            <label class="small">Selected asset</label>
-            <div style="font-weight:800" id="panelAsset">EUR/USD</div>
-
-            <label class="small" style="margin-top:8px">Order size</label>
-            <input id="panelSize" class="input" type="number" value="1" step="0.01" />
-
-            <label class="small" style="margin-top:8px">Leverage</label>
-            <select id="panelLev" class="select">
-              <option>10</option><option>25</option><option selected>50</option><option>100</option>
-            </select>
-
-            <div style="display:flex;gap:8px;margin-top:10px">
-              <button class="btn" onclick="placeTrade('buy')">Place Buy</button>
-              <button class="btn sell" onclick="placeTrade('sell')">Place Sell</button>
-              <button class="btn ghost" onclick="closeAll()">Close All</button>
-            </div>
-          </div>
-
-          <div style="margin-top:12px">
-            <h4 style="margin:0;color:var(--accent)">Account</h4>
-            <div class="small" style="margin-top:8px">Balance</div>
-            <div style="font-weight:900" id="accountBalance">KES 10,000</div>
-            <div class="small" style="margin-top:8px">Open P/L</div>
-            <div id="accountPL">KES 0</div>
-          </div>
-
-          <div style="margin-top:12px">
-            <h4 style="margin:0">Recent Trades</h4>
-            <div id="recentTrades" class="orders" style="max-height:140px"></div>
-            <div style="margin-top:8px;display:flex;gap:8px">
-              <button class="btn ghost" onclick="exportHistory()">Export</button>
-              <button class="btn ghost" onclick="resetDemo()">Reset</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="panel" style="margin-top:12px">
-          <h4>Payments</h4>
-          <div class="small">Preferred: M-Pesa Till</div>
-          <div style="font-weight:900;color:var(--accent);margin-top:6px">3675058</div>
-          <div style="margin-top:8px" class="small">After payment send txn ID via WhatsApp</div>
+        <div class="card" style="margin-top:12px">
+          <h4 style="color:var(--accent);margin:0">How to verify (demo)</h4>
+          <ol class="muted xs" style="margin-top:8px">
+            <li>Send payment to Till <strong>3675058</strong>.</li>
+            <li>Open WhatsApp and send the transaction ID to support.</li>
+            <li>We will (demo) confirm and credit your demo account when you press "Simulate Verify".</li>
+          </ol>
           <div style="margin-top:10px">
-            <button class="btn" onclick="depositDemo()">Demo Deposit</button>
-            <button class="btn ghost" onclick="showAlert('Payment instructions: Use M-Pesa Till 3675058','info')">How to pay</button>
+            <button class="btn" onclick="simulateVerify()">Simulate Verify</button>
           </div>
         </div>
-      </aside>
-    </div>
+      </div>
 
-    <footer>
-      © <span id="year"></span> Deriv_Trade — Demo environment. Not for real money trading.
-    </footer>
-  </main>
-</div>
+      <footer><div class="muted xs">© <span id="year"></span> Deriv_Trade — Demo environment (local only)</div></footer>
+    </main>
 
-<!-- ALERTS -->
-<div class="alerts" id="alerts"></div>
+  </div>
+
+  <!-- alerts -->
+  <div class="alerts" id="alerts"></div>
 
 <script>
-/* ---------------------------
-   INITIAL SETUP & STATE
-   --------------------------- */
-document.getElementById('year').innerText = new Date().getFullYear();
+/* ===============================
+   Simple Auth (Option 1 behavior)
+   - users stored under 'dt_users'
+   - session stored under 'dt_session'
+   =============================== */
+const USERS_KEY = 'dt_users_v1';
+const SESSION_KEY = 'dt_session_v1';
+const DEMO_STATE_KEY = 'dt_demo_state_v1';
 
-const ASSETS = {
-  EURUSD: { symbol:'EUR/USD', base:1.0864, spread:0.8, type:'forex' },
-  GBPUSD: { symbol:'GBP/USD', base:1.2741, spread:1.0, type:'forex' },
-  BTCUSD: { symbol:'BTC/USD', base:37850, spread:50, type:'crypto' },
-  XAUUSD: { symbol:'XAU/USD', base:1840.30, spread:1.8, type:'commodity' },
-  USDJPY: { symbol:'USD/JPY', base:147.82, spread:2, type:'forex' }
-};
+function getUsers(){ return JSON.parse(localStorage.getItem(USERS_KEY) || '{}'); }
+function saveUsers(u){ localStorage.setItem(USERS_KEY, JSON.stringify(u)); }
+function getSession(){ return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); }
+function setSession(username){ localStorage.setItem(SESSION_KEY, JSON.stringify({ username, ts: Date.now() })); }
+function clearSession(){ localStorage.removeItem(SESSION_KEY); }
 
-let currentAsset = 'EURUSD';
-let demoState = JSON.parse(localStorage.getItem('deriv_demo_state') || JSON.stringify({
+/* ===== Demo state structure ===== */
+let demoState = JSON.parse(localStorage.getItem(DEMO_STATE_KEY) || JSON.stringify({
   balance: 10000,
-  orders: [], // open orders
+  orders: [], // pending positions and open positions
   history: [] // closed
 }));
 
-function saveState(){ localStorage.setItem('deriv_demo_state', JSON.stringify(demoState)); updateUI(); }
-function resetDemo(){ if(confirm('Reset demo account?')){ demoState = { balance:10000, orders:[], history:[] }; saveState(); showAlert('Demo reset','info'); } }
+function saveDemo(){ localStorage.setItem(DEMO_STATE_KEY, JSON.stringify(demoState)); updateAccountUI(); renderOrders(); renderRecent(); }
 
-function updateUI(){
-  document.getElementById('sideBalance').innerText = 'KES ' + Math.round(demoState.balance);
-  document.getElementById('accountBalance').innerText = 'KES ' + Math.round(demoState.balance);
-  const openPL = demoState.orders.reduce((s,o)=> s + (o.pnl||0), 0);
-  document.getElementById('sidePL').innerText = 'KES ' + Math.round(openPL);
-  document.getElementById('accountPL').innerText = 'KES ' + Math.round(openPL);
-  renderOrders();
-  renderRecent();
-  document.getElementById('assetTitle').innerText = ASSETS[currentAsset].symbol;
-  document.getElementById('panelAsset').innerText = ASSETS[currentAsset].symbol;
-  document.getElementById('assetSpread').innerText = ASSETS[currentAsset].spread;
-  document.getElementById('assetLev').innerText = document.getElementById('leverageSelect') ? document.getElementById('leverageSelect').value : '50x';
-}
-updateUI();
+/* ===== UI building: auth area (login/register) ===== */
+const authArea = document.getElementById('authArea');
+const appArea = document.getElementById('appArea');
+const welcomeUser = document.getElementById('welcomeUser');
+const logoutBtn = document.getElementById('logoutBtn');
 
-/* ---------------------------
-   TOP TICKER (simulated)
-   --------------------------- */
-const topTicker = document.getElementById('topTicker');
-function initTicker(){
-  topTicker.innerHTML = '';
-  Object.keys(ASSETS).forEach(k=>{
-    const t = document.createElement('div'); t.className='tick';
-    t.innerHTML = `<div class="s">${ASSETS[k].symbol}</div><div class="p">${formatPrice(ASSETS[k].base,k)}</div>`;
-    topTicker.appendChild(t);
-  });
-}
-function tickTicker(){
-  Object.keys(ASSETS).forEach((k, idx)=>{
-    const asset = ASSETS[k];
-    const vol = asset.type === 'crypto' ? 0.02 : 0.002;
-    const next = +(asset.base * (1 + (Math.random()-0.5)*vol)).toFixed(asset.type==='crypto'?0:4);
-    asset.base = next;
-  });
-  // refresh DOM
-  Array.from(topTicker.children).forEach((el, i)=>{
-    const k = Object.keys(ASSETS)[i];
-    el.querySelector('.p').innerText = formatPrice(ASSETS[k].base, k);
-  });
-}
-function formatPrice(v, key){
-  if(key === 'BTCUSD' || key === 'XAUUSD') return '$' + Number(v).toLocaleString();
-  if(key === 'USDJPY') return v.toFixed(2);
-  return v.toFixed(4);
-}
-initTicker();
-setInterval(tickTicker, 2500);
+function buildAuthUI(){
+  authArea.innerHTML = `
+    <div class="auth-wrap">
+      <div class="auth-left panel">
+        <h2 style="color:var(--accent);margin:0">Welcome to Deriv_Trade</h2>
+        <p class="muted xs" style="margin-top:8px">Sign in or create a quick account to access demo trading.</p>
+        <div style="margin-top:12px" class="auth-note">
+          <div><strong>Demo Notice</strong></div>
+          <div class="xs muted" style="margin-top:6px">Accounts and demo data are stored locally in your browser (no backend). Quick Demo will create a sample user.</div>
+        </div>
+      </div>
 
-/* ---------------------------
-   MAIN CHART (Chart.js simulated)
-   --------------------------- */
-const ctx = document.getElementById('mainChart').getContext('2d');
-let chartLabels = [], chartData = [];
-for(let i=30;i>=0;i--){ chartLabels.push(new Date(Date.now()-i*60000).toLocaleTimeString().slice(0,5)); chartData.push(ASSETS[currentAsset].base); }
-const mainChart = new Chart(ctx, {
+      <div class="auth-right card">
+        <div class="tab">
+          <button id="tabLogin" class="tabbtn active">Login</button>
+          <button id="tabReg" class="tabbtn">Register</button>
+        </div>
+
+        <div id="loginPanel">
+          <div style="margin-bottom:8px"><input id="loginUser" class="input" placeholder="Username (e.g. paul123)"></div>
+          <div style="margin-bottom:8px"><input id="loginPass" type="password" class="input" placeholder="Password"></div>
+          <div style="display:flex;gap:8px">
+            <button class="btn" onclick="doLogin()">Login</button>
+            <button class="btn ghost" onclick="quickDemo()">Quick Demo</button>
+          </div>
+          <div id="loginMsg" class="xs muted" style="margin-top:8px"></div>
+        </div>
+
+        <div id="regPanel" style="display:none">
+          <div style="margin-bottom:8px"><input id="regUser" class="input" placeholder="Choose username"></div>
+          <div style="margin-bottom:8px"><input id="regPass" type="password" class="input" placeholder="Password"></div>
+          <div style="margin-bottom:8px"><input id="regPass2" type="password" class="input" placeholder="Confirm password"></div>
+          <div style="display:flex;gap:8px">
+            <button class="btn" onclick="doRegister()">Create Account</button>
+            <button class="btn ghost" onclick="fillSample()">Autofill</button>
+          </div>
+          <div id="regMsg" class="xs muted" style="margin-top:8px"></div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // hookup
+  document.getElementById('tabLogin').onclick = ()=>{ showLogin(); };
+  document.getElementById('tabReg').onclick = ()=>{ showReg(); };
+}
+
+function showLogin(){ document.getElementById('loginPanel').style.display='block'; document.getElementById('regPanel').style.display='none'; document.getElementById('tabLogin').classList.add('active'); document.getElementById('tabReg').classList.remove('active'); }
+function showReg(){ document.getElementById('loginPanel').style.display='none'; document.getElementById('regPanel').style.display='block'; document.getElementById('tabReg').classList.add('active'); document.getElementById('tabLogin').classList.remove('active'); }
+
+/* ===== Auth actions ===== */
+function doRegister(){
+  const u = document.getElementById('regUser').value.trim();
+  const p = document.getElementById('regPass').value;
+  const p2 = document.getElementById('regPass2').value;
+  const msg = document.getElementById('regMsg');
+  msg.innerText = '';
+  if(!u || !p || !p2){ msg.innerText = 'Fill all fields'; return; }
+  if(p !== p2){ msg.innerText = 'Passwords do not match'; return; }
+  const users = getUsers();
+  if(users[u]){ msg.innerText = 'Username taken'; return; }
+  users[u] = { pass: p, created: Date.now() };
+  saveUsers(users);
+  setSession(u);
+  msg.innerText = 'Account created — redirecting...';
+  setTimeout(()=> initApp(), 700);
+}
+
+function doLogin(){
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value;
+  const msg = document.getElementById('loginMsg');
+  msg.innerText = '';
+  if(!u || !p){ msg.innerText = 'Enter username and password'; return; }
+  const users = getUsers();
+  if(!users[u] || users[u].pass !== p){ msg.innerText = 'Invalid credentials'; return; }
+  setSession(u);
+  msg.innerText = 'Login successful — redirecting...';
+  setTimeout(()=> initApp(), 500);
+}
+
+function quickDemo(){
+  const users = getUsers();
+  users['demo_user'] = { pass: 'demo123', created: Date.now() };
+  saveUsers(users);
+  setSession('demo_user');
+  initApp();
+}
+
+function fillSample(){
+  document.getElementById('regUser').value = 'user'+Math.floor(Math.random()*900);
+  document.getElementById('regPass').value = 'pass123';
+  document.getElementById('regPass2').value = 'pass123';
+}
+
+/* ===== App initialization ===== */
+function initApp(){
+  // Hide auth, show app
+  authArea.style.display = 'none';
+  appArea.style.display = 'block';
+  const s = getSession();
+  if(s && s.username){
+    welcomeUser.innerText = 'Hi, ' + s.username;
+    logoutBtn.style.display = 'inline-block';
+  } else {
+    welcomeUser.innerText = '';
+    logoutBtn.style.display = 'none';
+  }
+  // default show home
+  showPage('home');
+  updateAccountUI();
+}
+
+/* If session exists on load, initialize app, else show auth */
+(function onLoad(){
+  buildAuthUI();
+  const s = getSession();
+  if(s && s.username){ initApp(); } else { authArea.style.display = 'block'; appArea.style.display = 'none'; }
+})();
+
+/* ===== Logout ===== */
+function logout(){
+  clearSession();
+  // resume auth UI
+  authArea.style.display = 'block';
+  appArea.style.display = 'none';
+  welcomeUser.innerText = '';
+  logoutBtn.style.display = 'none';
+  showAlert('Logged out', 'info');
+}
+
+/* ===== Page switching (instant tabs) ===== */
+function showPage(page){
+  // hide auth area if any
+  authArea.style.display = 'none';
+  appArea.style.display = 'block';
+  // hide sections
+  ['home','trade','payments'].forEach(p=>{ const el = document.getElementById(p); if(el) el.style.display='none'; });
+  // show requested
+  const el = document.getElementById(page);
+  if(el) el.style.display = 'block';
+  // set active tab styling
+  document.querySelectorAll('.tabbtn').forEach(b=>{ b.classList.toggle('active', b.dataset.page===page); });
+  // ensure user is logged in if trying to see protected pages
+  const s = getSession();
+  if(!s && page !== 'home'){
+    // show auth if not logged
+    authArea.style.display = 'block';
+    appArea.style.display = 'none';
+    showAlert('Please login to access this page', 'error');
+    return;
+  }
+}
+
+/* ===== Alerts ===== */
+function showAlert(text, type='info', timeout=4500){
+  const wrap = document.getElementById('alerts');
+  const el = document.createElement('div'); el.className = 'alert';
+  el.innerHTML = `<div style="font-weight:800">${text}</div><div class="muted xs">${type}</div>`;
+  wrap.appendChild(el);
+  setTimeout(()=> el.remove(), timeout);
+}
+
+/* ===========================
+   Demo trading engine (front-end)
+   - demoState tracks balance, orders, history
+   - orders array contains pending & open positions
+   - pending orders execute after 8s (simulated)
+   =========================== */
+const ASSETS = {
+  EURUSD:{ symbol:'EUR/USD', base:1.0864, spread:0.8, type:'forex' },
+  GBPUSD:{ symbol:'GBP/USD', base:1.2741, spread:1.0, type:'forex' },
+  BTCUSD:{ symbol:'BTC/USD', base:37850, spread:50, type:'crypto' },
+  XAUUSD:{ symbol:'XAU/USD', base:1840.30, spread:1.8, type:'commodity' },
+  USDJPY:{ symbol:'USD/JPY', base:147.82, spread:2, type:'forex' }
+};
+let currentAsset = 'EURUSD';
+
+/* Chart.js setup */
+const ctx = document.getElementById('chartCanvas').getContext('2d');
+let labels = [], chartData = [];
+for(let i=30;i>=0;i--){ labels.push(new Date(Date.now()-i*60000).toLocaleTimeString().slice(0,5)); chartData.push(ASSETS[currentAsset].base); }
+const chart = new Chart(ctx, {
   type:'line',
-  data: { labels: chartLabels, datasets:[{ data: chartData, borderColor: 'rgba(227,6,19,0.95)', backgroundColor:'rgba(227,6,19,0.06)', tension:0.25, pointRadius:0 }] },
-  options: { responsive:true, plugins:{ legend:{display:false} }, scales:{ x:{ display:true }, y:{ display:true } } }
+  data:{ labels, datasets:[{ data: chartData, borderColor:'rgba(227,6,19,0.95)', backgroundColor:'rgba(227,6,19,0.06)', tension:0.25, pointRadius:0 }] },
+  options:{ responsive:true, plugins:{ legend:{ display:false } }, scales:{ x:{ display:true }, y:{ display:true } } }
 });
-function pushChart(){
-  const next = +(ASSETS[currentAsset].base * (1 + (Math.random()-0.5)*0.003)).toFixed(currentAsset==='BTCUSD'?0:4);
-  mainChart.data.labels.push(new Date().toLocaleTimeString().slice(0,5));
-  mainChart.data.datasets[0].data.push(next);
-  if(mainChart.data.labels.length>60){ mainChart.data.labels.shift(); mainChart.data.datasets[0].data.shift(); }
-  mainChart.update();
-  // update pnl evaluation
-  evaluateOpenPnl();
-}
+
+/* Push simulated points */
 setInterval(()=>{
-  // simulate asset base movement too
-  const key = currentAsset;
-  ASSETS[key].base = +(ASSETS[key].base * (1 + (Math.random()-0.5)*0.003)).toFixed(key==='BTCUSD'?0:4);
-  pushChart();
+  // small movement on all assets
+  Object.keys(ASSETS).forEach(k=>{
+    const a = ASSETS[k];
+    const vol = a.type === 'crypto' ? 0.02 : 0.0025;
+    a.base = +(a.base * (1 + (Math.random()-0.5)*vol)).toFixed(a.type === 'crypto' ? 0 : 4);
+  });
+  // update chart with current asset's base
+  const next = ASSETS[currentAsset].base;
+  chart.data.labels.push(new Date().toLocaleTimeString().slice(0,5));
+  chart.data.datasets[0].data.push(next);
+  if(chart.data.labels.length>60){ chart.data.labels.shift(); chart.data.datasets[0].data.shift(); }
+  chart.update();
+  evaluateOpenPnl(); renderOrders(); renderRecent(); updateAccountUI();
 }, 3500);
 
-/* ---------------------------
-   ORDERS / DEMO TRADING
-   - openOrder: creates a pending order with 10s countdown
-   - execute pending -> fills at current price and becomes open position
-   - close position -> realize P/L and return margin + pnl to balance
-   --------------------------- */
-function openOrder(side){
-  // small UI-based quick open (center chart controls)
-  const size = parseFloat(document.getElementById('sizeInput').value) || 1;
-  const lev = parseInt(document.getElementById('leverageSelect').value) || 50;
+/* Utility format */
+function formatPrice(v,k){ if(k==='BTCUSD'||k==='XAUUSD') return '$' + Number(v).toLocaleString(); if(k==='USDJPY') return v.toFixed(2); return v.toFixed(4); }
+
+/* Change asset */
+function changeAsset(val){
+  currentAsset = val;
+  document.getElementById('assetTitle').innerText = ASSETS[val].symbol;
+  document.getElementById('panelAsset').innerText = ASSETS[val].symbol;
+  document.getElementById('spread').innerText = ASSETS[val].spread;
+  // adjust chart base quick reset
+  chart.data.datasets[0].data = chart.data.datasets[0].data.map(()=>ASSETS[val].base);
+  chart.update();
+  showAlert('Switched to ' + ASSETS[val].symbol, 'info');
+}
+
+/* Demo order lifecycle */
+function quickOrder(side){
+  const size = parseFloat(document.getElementById('tradeSize').value) || 1;
+  const lev = parseInt(document.getElementById('tradeLev').value) || 50;
   createPending(side, size, lev);
 }
-function createPending(side, size, lev){
-  const entry = ASSETS[currentAsset].base;
-  const margin = Math.max(50, Math.round((size * (currentAsset==='BTCUSD' ? entry/100 : entry)) / lev));
-  if(demoState.balance < margin){ showAlert('Insufficient demo balance for margin KES ' + margin, 'error'); return; }
-  demoState.balance -= margin;
-  const pending = {
-    id: 'p'+Date.now(),
-    side, symbol: currentAsset, size, lev, entry, margin,
-    status:'pending', created: Date.now(), countdown:10, time: new Date().toLocaleTimeString()
-  };
-  demoState.orders.push(pending);
-  saveStateDebounced();
-  showAlert(`${side.toUpperCase()} pending: execution in 10s`, 'info');
-  // start countdown
-  const tickId = setInterval(()=>{
-    pending.countdown--;
-    saveStateDebounced();
-    if(pending.countdown <=0){
-      clearInterval(tickId);
-      executeOrder(pending.id);
-    }
-  },1000);
-}
-function executeOrder(pendingId){
-  const idx = demoState.orders.findIndex(o=>o.id===pendingId);
-  if(idx === -1) return;
-  const o = demoState.orders[idx];
-  // fill price: current asset base +- tiny slippage
-  const slippage = (Math.random()-0.5) * (o.side==='buy' ? 0.0002 : 0.0002);
-  const execPrice = +(ASSETS[o.symbol].base * (1 + slippage)).toFixed(o.symbol==='BTCUSD'?0:4);
-  const position = {
-    id: 'pos'+Date.now(),
-    side: o.side, symbol:o.symbol, size:o.size, lev:o.lev, entry: execPrice,
-    margin: o.margin, status:'open', openedAt: new Date().toLocaleString(), pnl:0
-  };
-  // remove pending and add position in history (store open positions in orders array)
-  demoState.orders.splice(idx,1);
-  demoState.orders.push(position);
-  saveStateDebounced();
-  showAlert(`${position.side.toUpperCase()} executed @ ${position.entry}`, 'success');
-}
-function evaluateOpenPnl(){
-  demoState.orders.forEach(o=>{
-    if(o.status !== 'open') return;
-    const current = ASSETS[o.symbol].base;
-    const sign = o.side === 'buy' ? 1 : -1;
-    const pnl = Math.round((current - o.entry) * o.size * 1000 * sign); // simplified
-    o.pnl = pnl;
-  });
-  saveStateDebounced();
-}
-function closeAll(){
-  if(demoState.orders.length === 0) { showAlert('No open positions','info'); return; }
-  let realized = 0;
-  // close all open positions
-  const remaining = [];
-  demoState.orders.forEach(o=>{
-    if(o.status === 'open'){
-      const pnl = o.pnl || 0;
-      realized += pnl;
-      demoState.balance += o.margin + pnl;
-      demoState.history.push({ side:o.side, symbol:o.symbol, size:o.size, entry:o.entry, pnl, closedAt: new Date().toLocaleString() });
-    } else {
-      // pending orders refunded margin + cancelled
-      if(o.status === 'pending'){
-        demoState.balance += o.margin; // refund
-        demoState.history.push({ side:o.side, symbol:o.symbol, remark:'pending cancelled', closedAt: new Date().toLocaleTimeString() });
-      }
-    }
-  });
-  demoState.orders = remaining;
-  saveStateDebounced();
-  showAlert('All positions closed. Realized KES ' + realized, 'success');
-}
 function placeTrade(side){
-  // right panel trade placement
   const size = parseFloat(document.getElementById('panelSize').value) || 1;
   const lev = parseInt(document.getElementById('panelLev').value) || 50;
   createPending(side, size, lev);
 }
 
-/* ---------------------------
-   RENDER ORDERS & HISTORY
-   --------------------------- */
+function createPending(side,size,lev){
+  const entry = ASSETS[currentAsset].base;
+  // simplistic margin calculation
+  const margin = Math.max(50, Math.round((size * (currentAsset==='BTCUSD' ? entry/100 : entry)) / lev));
+  if(demoState.balance < margin){ showAlert('Insufficient demo balance for margin KES ' + margin, 'error'); return; }
+  demoState.balance -= margin;
+  const pending = { id:'p'+Date.now(), side, symbol: currentAsset, size, lev, entry, margin, status:'pending', countdown:8, created:Date.now() };
+  demoState.orders.push(pending);
+  saveDemo();
+  showAlert(`${side.toUpperCase()} pending — will execute in ~8s`, 'info');
+  // start countdown
+  const intId = setInterval(()=>{
+    pending.countdown--;
+    if(pending.countdown<=0){
+      clearInterval(intId);
+      executePending(pending.id);
+    }
+    saveDemo();
+  },1000);
+}
+
+function executePending(id){
+  const idx = demoState.orders.findIndex(o=>o.id===id && o.status==='pending');
+  if(idx === -1) return;
+  const p = demoState.orders[idx];
+  const slippage = (Math.random()-0.5)*0.0004; // small slippage
+  const execPrice = +(ASSETS[p.symbol].base * (1 + slippage)).toFixed(p.symbol==='BTCUSD'?0:4);
+  const position = { id:'pos'+Date.now(), side:p.side, symbol:p.symbol, size:p.size, lev:p.lev, entry:execPrice, margin:p.margin, status:'open', openedAt:new Date().toLocaleTimeString(), pnl:0 };
+  // replace pending with position
+  demoState.orders.splice(idx,1);
+  demoState.orders.push(position);
+  saveDemo();
+  showAlert(`${position.side.toUpperCase()} executed @ ${position.entry}`, 'success');
+  renderOrders(); renderRecent(); updateAccountUI();
+}
+
+function evaluateOpenPnl(){
+  let total = 0;
+  demoState.orders.forEach(o=>{
+    if(o.status !== 'open') return;
+    const current = ASSETS[o.symbol].base;
+    const sign = o.side==='buy'?1:-1;
+    const pnl = Math.round((current - o.entry) * o.size * 1000 * sign); // simplified
+    o.pnl = pnl;
+    total += pnl;
+  });
+  // show in UI
+  document.getElementById('accPL').innerText = 'KES ' + Math.round(total);
+  document.getElementById('accBalance').innerText = 'KES ' + Math.round(demoState.balance);
+}
+
+function closeAll(){
+  if(demoState.orders.length === 0){ showAlert('No positions', 'info'); return; }
+  let realized = 0;
+  const remaining = [];
+  demoState.orders.forEach(o=>{
+    if(o.status === 'open'){
+      realized += o.pnl || 0;
+      demoState.balance += o.margin + (o.pnl || 0);
+      demoState.history.push({ side:o.side, symbol:o.symbol, size:o.size, pnl:o.pnl, closedAt:new Date().toLocaleString() });
+    } else if(o.status === 'pending'){
+      // cancel pending and refund
+      demoState.balance += o.margin;
+      demoState.history.push({ side:o.side, symbol:o.symbol, remark:'pending cancelled', closedAt:new Date().toLocaleTimeString() });
+    }
+  });
+  demoState.orders = remaining;
+  saveDemo();
+  showAlert('All positions closed. Realized KES ' + realized, 'success');
+}
+
+/* Render orders & recent */
 function renderOrders(){
-  const el = document.getElementById('orderBook'); el.innerHTML = '';
-  if(demoState.orders.length === 0){ el.innerHTML = '<div class="small muted">No positions or pending orders</div>'; return; }
+  const el = document.getElementById('ordersList'); el.innerHTML = '';
+  if(demoState.orders.length === 0){ el.innerHTML = '<div class="muted xs">No open positions or pending</div>'; return; }
+  // show newest first
   demoState.orders.slice().reverse().forEach(o=>{
     const div = document.createElement('div'); div.className = 'order';
     if(o.status === 'pending'){
-      div.innerHTML = `<div><strong>${o.side.toUpperCase()} (pending)</strong><div class="meta">Asset: ${ASSETS[o.symbol].symbol} • Size: ${o.size} • Margin: KES ${o.margin}</div></div>
-                      <div style="text-align:right"><div class="small">Exec in ${o.countdown}s</div><div class="small">${o.time}</div></div>`;
-    } else if(o.status === 'open' || o.id && o.id.startsWith('pos')){
-      div.innerHTML = `<div><strong>${o.side.toUpperCase()}</strong><div class="meta">Entry: ${o.entry} • Size: ${o.size} • Margin: KES ${o.margin}</div></div>
-                      <div style="text-align:right"><div style="font-weight:800">${o.pnl? 'KES '+o.pnl : 'KES 0'}</div><div class="small">${o.openedAt||o.time||''}</div></div>`;
+      div.innerHTML = `<div><strong>${o.side.toUpperCase()} (pending)</strong><div class="muted xs">Asset: ${ASSETS[o.symbol].symbol} • Size ${o.size} • Margin KES ${o.margin}</div></div><div style="text-align:right"><div class="muted xs">Exec in ${o.countdown}s</div></div>`;
     } else {
-      div.innerHTML = `<div><strong>${o.side}</strong><div class="meta">Status: ${o.status}</div></div>`;
+      div.innerHTML = `<div><strong>${o.side.toUpperCase()}</strong><div class="muted xs">Entry: ${o.entry} • Size ${o.size}</div></div><div style="text-align:right"><div style="font-weight:800">${o.pnl? 'KES '+o.pnl : 'KES 0'}</div><div class="muted xs">${o.openedAt||''}</div></div>`;
     }
     el.appendChild(div);
   });
 }
+
 function renderRecent(){
-  const el = document.getElementById('recentTrades'); el.innerHTML = '';
-  if(!demoState.history || demoState.history.length ===0){ el.innerHTML = '<div class="small muted">No history</div>'; return; }
+  const el = document.getElementById('recentList'); el.innerHTML = '';
+  if(!demoState.history.length){ el.innerHTML = '<div class="muted xs">No history yet</div>'; return; }
   demoState.history.slice().reverse().slice(0,8).forEach(h=>{
-    const d = document.createElement('div'); d.className='order'; d.innerHTML = `<div><strong>${h.side || ''} ${h.symbol||''}</strong><div class="meta">${h.closedAt || h.time || ''}</div></div><div style="text-align:right"><div class="small">${h.pnl? 'KES '+h.pnl : h.remark || ''}</div></div>`;
+    const d = document.createElement('div'); d.className='order';
+    d.innerHTML = `<div><strong>${h.side||''} ${h.symbol||''}</strong><div class="muted xs">${h.closedAt||''}</div></div><div style="text-align:right"><div class="muted xs">${h.pnl? 'KES '+h.pnl : (h.remark||'')}</div></div>`;
     el.appendChild(d);
   });
 }
 
-/* ---------------------------
-   UTILITIES: alerts, export
-   --------------------------- */
-function showAlert(msg, type='info', t=4500){
-  const wrap = document.getElementById('alerts');
-  const el = document.createElement('div'); el.className='alert'; el.innerHTML = `<div style="font-weight:800">${msg}</div><div class="small">${type}</div>`;
-  wrap.appendChild(el); setTimeout(()=> el.remove(), t);
+/* Deposit & verify (demo) */
+function depositDialog(){
+  const v = parseFloat(prompt('Enter deposit amount (KES)', '1000'));
+  if(!v || isNaN(v) || v<=0) { showAlert('Invalid amount', 'error'); return; }
+  demoState.balance += v; saveDemo();
+  showAlert('Demo deposit KES ' + v, 'success');
 }
+
+function simulateVerify(){
+  // For demo: credit fixed amount
+  const v = parseFloat(prompt('Enter amount to credit after verification (KES)', '1000'));
+  if(!v || isNaN(v) || v<=0) return;
+  demoState.balance += v; saveDemo();
+  showAlert('Verified — credited KES ' + v, 'success');
+}
+
+/* Payments helpers */
+function copyTill(){ navigator.clipboard?.writeText('3675058'); showAlert('Till 3675058 copied', 'info'); }
+function openWhats(){ window.open('https://wa.me/254796518099', '_blank'); }
+
+/* Export history */
 function exportHistory(){
-  const content = JSON.stringify(demoState, null, 2);
-  const blob = new Blob([content], { type:'application/json' });
+  const blob = new Blob([JSON.stringify(demoState, null, 2)], { type:'application/json' });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = 'deriv_trade_demo_history.json'; a.click();
-  URL.revokeObjectURL(url);
-  showAlert('Export ready','info');
+  const a = document.createElement('a'); a.href = url; a.download = 'deriv_trade_demo_history.json'; a.click(); URL.revokeObjectURL(url);
+  showAlert('Export ready', 'info');
 }
 
-/* ---------------------------
-   HELPERS & small UI actions
-   --------------------------- */
-function setView(v){
-  document.querySelectorAll('#menu button').forEach(b=>b.classList.remove('active'));
-  const btn = document.querySelector(`#menu button[data-view="${v}"]`);
-  if(btn) btn.classList.add('active');
-  showAlert(`Switched to ${v}`, 'info', 1400);
-}
-function changeAsset(val){
-  currentAsset = val;
-  document.getElementById('assetTitle').innerText = ASSETS[val].symbol;
-  document.getElementById('panelAsset').innerText = ASSETS[val].symbol;
-  // reset chart with new base
-  mainChart.data.datasets[0].data = mainChart.data.datasets[0].data.map(()=>ASSETS[val].base);
-  mainChart.update();
-  showAlert('Switched to ' + ASSETS[val].symbol, 'info');
-}
-function depositDemo(){
-  const v = parseFloat(prompt('Enter deposit KES amount', '1000'));
-  if(!v || isNaN(v) || v<=0){ showAlert('Invalid amount','error'); return; }
-  demoState.balance += v; saveStateDebounced(); showAlert('Demo deposit KES ' + v,'success');
+/* Save & update UI */
+function saveAndRender(){ localStorage.setItem(DEMO_STATE_KEY, JSON.stringify(demoState)); updateAccountUI(); renderOrders(); renderRecent(); }
+function updateAccountUI(){
+  document.getElementById('accBalance').innerText = 'KES ' + Math.round(demoState.balance);
+  document.getElementById('panelAsset').innerText = ASSETS[currentAsset].symbol;
+  document.getElementById('assetTitle').innerText = ASSETS[currentAsset].symbol;
+  document.getElementById('spread').innerText = ASSETS[currentAsset].spread;
+  document.getElementById('welcomeUser').innerText = (getSession() && getSession().username) ? 'Hi, ' + getSession().username : '';
+  logoutBtn.style.display = getSession() ? 'inline-block' : 'none';
 }
 
-/* ---------------------------
-   STATE SAVE debounce and init
-   --------------------------- */
-let saveTimeout = null;
-function saveStateDebounced(){
-  if(saveTimeout) clearTimeout(saveTimeout);
-  saveTimeout = setTimeout(()=>{ localStorage.setItem('deriv_demo_state', JSON.stringify(demoState)); updateUI(); }, 300);
-}
-function saveStateImmediate(){ localStorage.setItem('deriv_demo_state', JSON.stringify(demoState)); updateUI(); }
-saveStateImmediate();
+/* Save demo state initially */
+saveDemo();
 
-/* expose some funcs to window for buttons */
-window.depositDemo = depositDemo;
-window.resetDemo = resetDemo;
-window.openOrder = openOrder;
-window.openTrade = openOrder;
-window.placeTrade = placeTrade;
-window.closeAll = closeAll;
+/* Helper functions used earlier */
+function getUsers(){ return JSON.parse(localStorage.getItem(USERS_KEY) || '{}'); }
+function saveUsers(u){ localStorage.setItem(USERS_KEY, JSON.stringify(u)); }
+function getSession(){ return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); }
+function setSession(u){ localStorage.setItem(SESSION_KEY, JSON.stringify({ username:u, ts: Date.now() })); }
+function clearSession(){ localStorage.removeItem(SESSION_KEY); }
+
+/* For compatibility with earlier functions used in UI */
+function saveDemoState(){ saveDemo(); }
+function resetDemo(){ if(confirm('Reset demo data?')){ demoState = { balance:10000, orders:[], history:[] }; saveDemo(); showAlert('Demo reset', 'info'); } }
+
+// Expose some functions to buttons globally
+window.showPage = showPage;
+window.logout = logout;
+window.depositDialog = depositDialog;
 window.exportHistory = exportHistory;
-window.setView = setView;
+window.resetDemo = resetDemo;
+window.copyTill = copyTill;
+window.openWhats = openWhats;
+window.simulateVerify = simulateVerify;
+window.quickOrder = quickOrder;
+window.placeTrade = placeTrade;
+window.quickDemo = quickDemo;
 
-/* initial render */
-renderOrders();
-renderRecent();
-updateUI();
+/* Set year in footer */
+document.getElementById('year').innerText = new Date().getFullYear();
+
+/* If user is logged in by the time page loads, init app */
+if(getSession()){ initApp(); } else { /* show auth */ }
+
+/* initial render for orders/recent */
+renderOrders(); renderRecent(); updateAccountUI();
 
 </script>
 </body>
-                </html>
+  </html>
