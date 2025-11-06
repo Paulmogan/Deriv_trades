@@ -3,528 +3,576 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Deriv_Trade — Minimal Professional</title>
-<meta name="description" content="Deriv_Trade — Minimal professional demo trading UI. M-Pesa Till 3675058." />
-<!-- Chart.js CDN -->
+<title>Deriv_Trade — Demo Dashboard (Deriv-style)</title>
+<meta name="description" content="Deriv_Trade demo dashboard - Deriv-style sidebar, demo trading, M-Pesa Till 3675058." />
+<!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
   :root{
     --bg:#000;
-    --panel:#0e0e0f;
+    --panel:#0d0d0f;
     --accent:#e30613;
     --muted:#bdbdbd;
     --glass: rgba(255,255,255,0.02);
-    --radius:12px;
+    --success:#2bd17d;
+    --danger:#ff5b5b;
+    --sidebar-w: 260px;
   }
   *{box-sizing:border-box}
-  body{margin:0;font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial; background:var(--bg); color:#fff; -webkit-font-smoothing:antialiased}
+  html,body{height:100%;margin:0;font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;background:var(--bg);color:#fff;-webkit-font-smoothing:antialiased}
   a{color:inherit;text-decoration:none}
 
-  /* Header */
-  header{position:sticky;top:0;background:linear-gradient(90deg,#070707,#0b0b0b);border-bottom:3px solid var(--accent);z-index:50}
-  .top{max-width:1100px;margin:0 auto;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
-  .brand{display:flex;gap:12px;align-items:center}
-  .logo{width:46px;height:46px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#9b0000);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px;box-shadow:0 8px 24px rgba(227,6,19,0.12)}
-  .brand h1{margin:0;font-size:18px;color:var(--accent)}
-  nav{display:flex;gap:8px;align-items:center}
-  nav a{padding:8px 10px;border-radius:8px;font-weight:700;color:#fff}
-  nav a:hover{background:rgba(224,0,19,0.06)}
+  /* layout */
+  .app{display:flex;min-height:100vh}
+  /* sidebar */
+  .sidebar{
+    width:var(--sidebar-w);
+    background:linear-gradient(180deg,#070707,#0b0b0b);
+    border-right:1px solid rgba(255,0,0,0.04);
+    padding:18px;
+    display:flex;flex-direction:column;gap:18px;
+  }
+  .brand{display:flex;align-items:center;gap:12px}
+  .logo{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#9a0000);display:flex;align-items:center;justify-content:center;font-weight:900}
+  .brand h2{margin:0;font-size:16px;color:var(--accent)}
+  .menu{margin-top:8px;display:flex;flex-direction:column;gap:6px}
+  .menu button{background:transparent;border:none;color:#fff;text-align:left;padding:10px;border-radius:8px;cursor:pointer;font-weight:700}
+  .menu button:hover{background:rgba(255,0,0,0.06)}
+  .menu .active{background:rgba(227,6,19,0.09);border-left:4px solid var(--accent);padding-left:14px}
 
-  /* Container */
-  .wrap{max-width:1100px;margin:20px auto;padding:0 16px}
+  .sidebar .card{background:#0b0b0b;padding:12px;border-radius:10px;border:1px solid #121212}
 
-  /* HERO (slideshow) */
-  .hero{display:flex;gap:20px;background:linear-gradient(180deg, rgba(255,255,255,0.01), var(--glass));padding:22px;border-radius:var(--radius);border:1px solid #141414;align-items:center}
-  .hero-left{flex:1}
-  .hero-right{width:360px}
-  .hero h2{color:var(--accent);margin:0 0 8px;font-size:26px}
-  .hero p{color:var(--muted);margin:0 0 12px}
-  .hero-cta{display:flex;gap:10px}
+  /* main area */
+  .main{flex:1;display:flex;flex-direction:column}
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid rgba(255,0,0,0.03)}
+  .top-ticker{display:flex;gap:12px;align-items:center;overflow:auto}
+  .tick{padding:8px;border-radius:8px;background:#0b0b0b;min-width:120px;border-left:4px solid rgba(227,6,19,0.9)}
+  .tick .s{font-weight:800}
+  .tick .p{color:var(--muted);margin-top:6px}
 
-  /* slideshow */
-  .slideshow{position:relative;border-radius:10px;overflow:hidden;height:220px}
-  .slides{display:flex;transition:transform .7s cubic-bezier(.2,.9,.2,1);height:100%}
-  .slide{flex:0 0 100%;display:flex;align-items:center;gap:16px;padding:18px;background-size:cover;background-position:center}
-  .slide .content{background:linear-gradient(180deg, rgba(0,0,0,0.0), rgba(0,0,0,0.4));padding:12px;border-radius:10px}
-  .slide h3{margin:0;color:var(--accent)}
-  .slide p{margin:6px 0 0;color:var(--muted);font-size:14px}
-  .slide-controls{display:flex;justify-content:space-between;align-items:center;padding:8px;margin-top:10px}
-  .dots{display:flex;gap:8px}
-  .dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,0.06);cursor:pointer}
-  .dot.active{background:var(--accent);box-shadow:0 6px 18px rgba(227,6,19,0.12)}
+  /* workspace */
+  .workspace{display:grid;grid-template-columns:1fr 360px;gap:18px;padding:18px}
+  @media (max-width:980px){ .workspace{grid-template-columns:1fr} .sidebar{display:none} }
 
-  /* grid layout */
-  .grid{display:grid;grid-template-columns:1fr 360px;gap:18px;margin-top:18px}
-  @media (max-width:980px){.grid{grid-template-columns:1fr} .hero-right{width:100%} .slideshow{height:180px}}
-
-  /* cards */
-  .card{background:var(--panel);padding:14px;border-radius:10px;border:1px solid #151515}
-  h3{margin:0 0 10px;color:var(--accent)}
-
-  /* ticker */
-  .ticker{display:flex;gap:10px;overflow:auto;padding:8px;border-radius:8px;background:#080808;border:1px solid rgba(255,0,0,0.04)}
-  .tick{min-width:120px;padding:8px;border-radius:8px;background:#0b0b0b;border-left:4px solid rgba(227,6,19,0.9)}
-  .tick .sym{font-weight:800}
-  .tick .val{color:var(--muted);margin-top:6px}
+  /* center */
+  .panel{background:linear-gradient(180deg, rgba(255,255,255,0.01), var(--glass));padding:12px;border-radius:12px;border:1px solid #141414}
+  .chart-wrap{height:440px;border-radius:10px;padding:8px;background:#060606;border:1px solid #111}
+  .controls{display:flex;gap:12px;align-items:center;margin-top:10px}
+  .select, .input{background:#0b0b0b;border:1px solid rgba(255,0,0,0.06);padding:10px;border-radius:8px;color:#fff}
 
   /* trade panel */
-  .trade-row{display:flex;gap:10px;align-items:center;margin-top:10px}
-  .input,select{background:#0b0b0b;border:1px solid rgba(255,0,0,0.06);padding:10px;border-radius:8px;color:#fff}
-  .trade-actions{display:flex;gap:10px;margin-top:12px}
-  .btn{background:var(--accent);color:#fff;padding:10px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:800}
+  .trade-panel{position:relative}
+  .trade-panel .panel{position:sticky;top:18px}
+  .trade-panel h4{color:var(--accent);margin:0}
+  .trade-row{display:flex;gap:8px;align-items:center;margin-top:10px}
+  .btn{background:var(--accent);color:#fff;padding:10px 12px;border-radius:8px;border:none;cursor:pointer;font-weight:800}
   .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
-  .btn.sell{background:#222;color:#fff;border:1px solid rgba(255,255,255,0.03)}
+  .btn.sell{background:#222;border:1px solid rgba(255,255,255,0.03)}
+  .small{font-size:13px;color:var(--muted)}
 
-  /* chart */
-  .chart{height:240px;border-radius:8px;overflow:hidden;border:1px solid #141414;background:#060606;padding:8px}
+  /* orders / history */
+  .orders{margin-top:12px;max-height:200px;overflow:auto}
+  .order{padding:10px;border-radius:8px;background:#0b0b0b;border-left:4px solid rgba(227,6,19,0.9);margin-bottom:8px;display:flex;justify-content:space-between;gap:8px}
+  .order .meta{color:var(--muted);font-size:13px}
 
-  /* orders list */
-  .orders{max-height:240px;overflow:auto;margin-top:10px}
-  .order{padding:10px;border-radius:8px;background:#0b0b0b;border-left:4px solid rgba(227,6,19,0.9);margin-bottom:8px}
-
-  /* payments */
-  .payments{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-  .pay-icon{width:56px;height:56px;border-radius:10px;background:#fff;padding:6px;display:flex;align-items:center;justify-content:center}
-  .pay-note{font-size:13px;color:var(--muted)}
-
-  /* features */
-  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:10px}
-  .feat{background:#0b0b0b;padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.02)}
-  @media (max-width:760px){.features{grid-template-columns:repeat(1,1fr)}}
-
-  /* faq/testimonials */
-  .testimonials{display:flex;gap:10px;overflow:auto}
-  .testimonial{min-width:220px;padding:12px;border-radius:8px;background:#0b0b0b;border-left:4px solid rgba(255,255,255,0.03)}
+  /* footer area */
+  footer{padding:12px 18px;border-top:1px solid rgba(255,0,0,0.03);color:var(--muted);text-align:center}
 
   /* alerts */
-  .alerts{position:fixed;right:16px;top:84px;display:flex;flex-direction:column;gap:8px;z-index:100}
-  .alert{padding:10px 12px;border-radius:8px;background:#111;border-left:4px solid var(--accent);min-width:200px}
+  .alerts{position:fixed;right:18px;bottom:18px;display:flex;flex-direction:column;gap:8px;z-index:200}
+  .alert{background:#111;padding:10px 12px;border-radius:8px;border-left:4px solid var(--accent);box-shadow:0 10px 30px rgba(0,0,0,0.6);min-width:220px}
 
-  /* footer */
-  footer{margin-top:20px;padding:18px;text-align:center;color:var(--muted);border-top:1px solid #141414}
-
-  /* tiny */
-  .muted{color:var(--muted);font-size:13px}
-  .small{font-size:13px}
+  /* responsive tweaks */
+  @media (max-width:600px){
+    .topbar{flex-direction:column;align-items:flex-start;gap:10px}
+  }
 </style>
 </head>
 <body>
+<div class="app">
 
-<header>
-  <div class="top">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
     <div class="brand">
       <div class="logo">DT</div>
       <div>
-        <h1>Deriv_Trade</h1>
-        <div class="muted" style="font-size:12px">Black & Red • Demo Trading • M-Pesa Till 3675058</div>
+        <h2>Deriv_Trade</h2>
+        <div class="small">Demo • Till 3675058</div>
       </div>
     </div>
 
-    <nav>
-      <a href="#live">Live</a>
-      <a href="#about">About</a>
-      <a href="#signals">Signals</a>
-      <a href="#payments">Payments</a>
-      <a href="#contact">Contact</a>
-      <a style="background:var(--accent);padding:8px 12px;border-radius:8px;font-weight:800" href="https://wa.me/254796518099" target="_blank">WhatsApp</a>
-    </nav>
-  </div>
-</header>
-
-<main class="wrap">
-
-  <!-- HERO -->
-  <section class="hero">
-    <div class="hero-left">
-      <h2>Minimal Professional Trading Experience</h2>
-      <p class="muted">A clean, trusted demo environment designed for learning and testing trading strategies — demo-only until you connect a live broker backend.</p>
-
-      <div style="margin-top:14px" class="ticker" id="ticker">
-        <div class="tick"><div class="sym">EUR/USD</div><div class="val">1.0864</div></div>
-        <div class="tick"><div class="sym">GBP/USD</div><div class="val">1.2741</div></div>
-        <div class="tick"><div class="sym">BTC/USD</div><div class="val">$37,850</div></div>
-        <div class="tick"><div class="sym">XAU/USD</div><div class="val">$1,840</div></div>
-      </div>
-
-      <div style="margin-top:14px" class="hero-cta">
-        <button class="btn" onclick="document.getElementById('live').scrollIntoView({behavior:'smooth'})">Open Demo</button>
-        <button class="btn ghost" onclick="document.getElementById('payments').scrollIntoView({behavior:'smooth'})">Deposit</button>
-      </div>
-
-      <div class="features" style="margin-top:18px">
-        <div class="feat"><strong>Simulated demo account</strong><div class="muted">Practice with zero risk</div></div>
-        <div class="feat"><strong>Trusted payments</strong><div class="muted">M-Pesa, PayPal, Cards</div></div>
-        <div class="feat"><strong>Signals & courses</strong><div class="muted">Learn from our team</div></div>
-      </div>
+    <div class="menu" id="menu">
+      <button class="active" data-view="dashboard" onclick="setView('dashboard')">Dashboard</button>
+      <button data-view="trade" onclick="setView('trade')">Trade</button>
+      <button data-view="markets" onclick="setView('markets')">Markets</button>
+      <button data-view="payments" onclick="setView('payments')">Payments</button>
+      <button data-view="account" onclick="setView('account')">Account</button>
+      <button data-view="help" onclick="setView('help')">Help</button>
     </div>
 
-    <div class="hero-right">
+    <div class="sidebar-footer" style="margin-top:auto">
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center">
           <div>
-            <div class="muted">Demo Balance</div>
-            <div style="font-weight:900;font-size:18px" id="demoBalance">KES 10,000</div>
+            <div class="small">Demo Balance</div>
+            <div style="font-weight:900" id="sideBalance">KES 10,000</div>
           </div>
-          <div>
-            <div class="muted">Open P/L</div>
-            <div id="demoPl" style="font-weight:800">KES 0</div>
-          </div>
-        </div>
-
-        <div style="margin-top:12px">
-          <div class="muted">Quick Deposit</div>
-          <div style="display:flex;gap:8px;margin-top:8px">
-            <button class="btn" onclick="depositDemo()">Deposit Demo</button>
-            <button class="btn ghost" onclick="resetDemo()">Reset</button>
+          <div style="text-align:right">
+            <div class="small">Open P/L</div>
+            <div id="sidePL">KES 0</div>
           </div>
         </div>
-
-        <hr style="border-color:#111;margin:12px 0" />
-
-        <div>
-          <div class="muted">Support</div>
-          <a class="btn ghost" href="https://wa.me/254796518099" target="_blank">WhatsApp</a>
+        <div style="margin-top:10px;display:flex;gap:8px">
+          <button class="btn" onclick="depositDemo()">Deposit</button>
+          <button class="btn ghost" onclick="resetDemo()">Reset</button>
         </div>
       </div>
 
-      <div class="card" style="margin-top:12px">
-        <h3 class="small">Why Us</h3>
-        <div class="muted" style="font-size:13px">Reliable design, easy payments, quick start. Demo-first approach for safe learning.</div>
+      <div style="margin-top:12px" class="card">
+        <div class="small">Support</div>
+        <a class="btn ghost" href="https://wa.me/254796518099" target="_blank">WhatsApp</a>
       </div>
     </div>
-  </section>
+  </aside>
 
-  <!-- GRID: Chart + Trade panel -->
-  <div class="grid" style="margin-top:18px">
-
-    <!-- LEFT: Live Chart & Trading -->
-    <div>
-      <section id="live" class="card">
-        <h3>Live Chart (simulated)</h3>
-        <div class="chart">
-          <canvas id="chartCanvas"></canvas>
+  <!-- MAIN -->
+  <main class="main">
+    <!-- topbar -->
+    <div class="topbar">
+      <div style="display:flex;gap:18px;align-items:center">
+        <div style="display:flex;align-items:center;gap:16px">
+          <div style="font-weight:800;font-size:18px;color:var(--accent)">Deriv_Trade</div>
+          <div class="small">Black & Red Demo</div>
         </div>
 
-        <div class="trade-row" style="margin-top:12px">
-          <div style="flex:1">
-            <label class="small muted">Symbol</label>
-            <select id="symbol" class="input" style="width:100%;padding:10px;border-radius:8px">
-              <option>EUR/USD</option>
-              <option>GBP/USD</option>
-              <option>BTC/USD</option>
-              <option>XAU/USD</option>
-              <option>USD/JPY</option>
+        <div class="top-ticker" id="topTicker">
+          <!-- ticks injected via JS -->
+        </div>
+      </div>
+
+      <div style="display:flex;gap:12px;align-items:center">
+        <div class="small">Logged in as <strong>DemoUser</strong></div>
+        <button class="btn ghost" onclick="exportHistory()">Export</button>
+      </div>
+    </div>
+
+    <!-- workspace -->
+    <div class="workspace">
+      <!-- CENTER: Chart + controls -->
+      <section>
+        <div class="panel">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="font-size:18px;font-weight:800" id="assetTitle">EUR / USD</div>
+              <div class="small" id="assetSub">Forex • Major</div>
+            </div>
+            <div style="display:flex;gap:12px;align-items:center">
+              <div class="small">Spread: <strong id="assetSpread">0.8</strong></div>
+              <div class="small">Leverage: <strong id="assetLev">50x</strong></div>
+            </div>
+          </div>
+
+          <div style="margin-top:12px" class="chart-wrap">
+            <canvas id="mainChart"></canvas>
+          </div>
+
+          <div class="controls" style="margin-top:12px">
+            <select id="assetSelect" class="select" onchange="changeAsset(this.value)">
+              <option value="EURUSD">EUR/USD</option>
+              <option value="GBPUSD">GBP/USD</option>
+              <option value="BTCUSD">BTC/USD</option>
+              <option value="XAUUSD">XAU/USD</option>
+              <option value="USDJPY">USD/JPY</option>
             </select>
+
+            <div style="display:flex;gap:8px;align-items:center">
+              <input id="sizeInput" class="input" type="number" min="0.01" step="0.01" value="1" style="width:100px" />
+              <select id="leverageSelect" class="select">
+                <option>10</option><option>25</option><option selected>50</option><option>100</option>
+              </select>
+            </div>
+
+            <button class="btn" onclick="openOrder('buy')">Buy</button>
+            <button class="btn sell" onclick="openOrder('sell')">Sell</button>
           </div>
 
-          <div style="width:100px">
-            <label class="small muted">Size</label>
-            <input id="size" class="input" value="1" />
-          </div>
-
-          <div style="width:120px">
-            <label class="small muted">Leverage</label>
-            <select id="lev" class="input"><option>10</option><option>25</option><option>50</option></select>
-          </div>
-        </div>
-
-        <div class="trade-actions">
-          <button class="btn" onclick="placeDemo('buy')">Buy</button>
-          <button class="btn sell" onclick="placeDemo('sell')">Sell</button>
-          <button class="btn ghost" onclick="closeDemo()">Close Selected</button>
-        </div>
-
-        <div style="margin-top:14px">
-          <h3 class="small">Order History</h3>
-          <div class="orders" id="orders"></div>
-        </div>
-      </section>
-
-      <section id="signals" class="card" style="margin-top:12px">
-        <h3>Signals</h3>
-        <div class="muted">Educational signals (demo)</div>
-        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
-          <div class="feat">BUY EUR/USD • TP 1.0990 • SL 1.0790</div>
-          <div class="feat">SELL XAU/USD • TP 2280 • SL 2330</div>
-        </div>
-      </section>
-
-      <section id="courses" class="card" style="margin-top:12px">
-        <h3>Courses</h3>
-        <div class="muted">Beginner to advanced — learn price action & risk management.</div>
-      </section>
-    </div>
-
-    <!-- RIGHT: Account & Payments -->
-    <aside>
-      <section class="card">
-        <h3>Account Overview</h3>
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div>
-            <div class="muted">Balance</div>
-            <div style="font-weight:900;font-size:18px" id="balance">KES 10,000</div>
-          </div>
-          <div>
-            <div class="muted">Open P/L</div>
-            <div id="pl" style="font-weight:800">KES 0</div>
+          <div class="orders" id="orderBook">
+            <!-- orders show here -->
           </div>
         </div>
 
-        <div style="margin-top:12px">
-          <h3 class="small muted">Payment Methods</h3>
-          <div class="payments" style="margin-top:8px">
-            <img class="pay-icon" src="https://upload.wikimedia.org/wikipedia/commons/6/6d/M-PESA_LOGO-01.svg" alt="M-Pesa">
-            <img class="pay-icon" src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal">
-            <img class="pay-icon" src="https://upload.wikimedia.org/wikipedia/commons/0/04/Visa.svg" alt="Visa">
-            <div style="flex:1">
-              <div class="muted">Preferred</div>
-              <div style="font-weight:900;color:var(--accent)">M-Pesa Till: 3675058</div>
-              <div class="muted pay-note">After payment send txn ID via WhatsApp</div>
+        <!-- Signals / Market news (demo) -->
+        <div style="margin-top:12px" class="panel">
+          <h4 style="color:var(--accent);margin:0">Signals & Market</h4>
+          <div class="small" style="margin-top:8px">Demo signals for learning purposes</div>
+          <div style="display:flex;gap:8px;margin-top:10px">
+            <div class="card" style="flex:1">
+              <div style="font-weight:800">BUY EUR/USD</div>
+              <div class="small">TP 1.0990 • SL 1.0790</div>
+            </div>
+            <div class="card" style="flex:1">
+              <div style="font-weight:800">SELL XAU/USD</div>
+              <div class="small">TP 2280 • SL 2330</div>
             </div>
           </div>
         </div>
 
-        <div style="margin-top:12px">
-          <button class="btn" onclick="depositDemo()">Instant Demo Deposit</button>
-          <button class="btn ghost" onclick="exportHistory()">Export History</button>
+      </section>
+
+      <!-- RIGHT: Trade panel -->
+      <aside class="trade-panel">
+        <div class="panel">
+          <h4>Trade Panel</h4>
+          <div class="small">Place demo orders — execution simulated with countdown</div>
+
+          <div style="margin-top:12px">
+            <label class="small">Selected asset</label>
+            <div style="font-weight:800" id="panelAsset">EUR/USD</div>
+
+            <label class="small" style="margin-top:8px">Order size</label>
+            <input id="panelSize" class="input" type="number" value="1" step="0.01" />
+
+            <label class="small" style="margin-top:8px">Leverage</label>
+            <select id="panelLev" class="select">
+              <option>10</option><option>25</option><option selected>50</option><option>100</option>
+            </select>
+
+            <div style="display:flex;gap:8px;margin-top:10px">
+              <button class="btn" onclick="placeTrade('buy')">Place Buy</button>
+              <button class="btn sell" onclick="placeTrade('sell')">Place Sell</button>
+              <button class="btn ghost" onclick="closeAll()">Close All</button>
+            </div>
+          </div>
+
+          <div style="margin-top:12px">
+            <h4 style="margin:0;color:var(--accent)">Account</h4>
+            <div class="small" style="margin-top:8px">Balance</div>
+            <div style="font-weight:900" id="accountBalance">KES 10,000</div>
+            <div class="small" style="margin-top:8px">Open P/L</div>
+            <div id="accountPL">KES 0</div>
+          </div>
+
+          <div style="margin-top:12px">
+            <h4 style="margin:0">Recent Trades</h4>
+            <div id="recentTrades" class="orders" style="max-height:140px"></div>
+            <div style="margin-top:8px;display:flex;gap:8px">
+              <button class="btn ghost" onclick="exportHistory()">Export</button>
+              <button class="btn ghost" onclick="resetDemo()">Reset</button>
+            </div>
+          </div>
         </div>
-      </section>
 
-      <section class="card" style="margin-top:12px">
-        <h3>FAQ</h3>
-        <div class="faq-item"><div class="small"><strong>How do I deposit?</strong><br class="muted">Use M-Pesa Till 3675058 or simulator for demo.</div></div>
-        <div class="faq-item"><div class="small"><strong>Are signals guaranteed?</strong><br class="muted">No. Signals are for education.</div></div>
-      </section>
-
-      <section class="card" style="margin-top:12px" id="contact">
-        <h3>Contact</h3>
-        <div class="muted">Quick support via WhatsApp</div>
-        <a class="btn" href="https://wa.me/254796518099" target="_blank">Open WhatsApp</a>
-      </section>
-    </aside>
-
-  </div>
-
-  <!-- Testimonials & Footer -->
-  <section class="card" style="margin-top:18px">
-    <h3>What traders say</h3>
-    <div class="testimonials" style="margin-top:10px">
-      <div class="testimonial"><strong>Alex</strong><div class="muted">“Great demo environment — helped me practice.”</div></div>
-      <div class="testimonial"><strong>Faith</strong><div class="muted">“Easy deposits via M-Pesa.”</div></div>
-      <div class="testimonial"><strong>Brian</strong><div class="muted">“Clear and simple UI.”</div></div>
+        <div class="panel" style="margin-top:12px">
+          <h4>Payments</h4>
+          <div class="small">Preferred: M-Pesa Till</div>
+          <div style="font-weight:900;color:var(--accent);margin-top:6px">3675058</div>
+          <div style="margin-top:8px" class="small">After payment send txn ID via WhatsApp</div>
+          <div style="margin-top:10px">
+            <button class="btn" onclick="depositDemo()">Demo Deposit</button>
+            <button class="btn ghost" onclick="showAlert('Payment instructions: Use M-Pesa Till 3675058','info')">How to pay</button>
+          </div>
+        </div>
+      </aside>
     </div>
-  </section>
 
-  <section class="card" style="margin-top:12px">
-    <h3>Contact Form</h3>
-    <form id="contactForm" onsubmit="handleContact(event)">
-      <input id="name" class="input" placeholder="Your name" style="margin-bottom:8px" required>
-      <input id="email" class="input" placeholder="Email" type="email" style="margin-bottom:8px" required>
-      <textarea id="message" class="input" placeholder="Message or transaction ID" rows="4" required></textarea>
-      <div style="margin-top:8px">
-        <button class="btn" type="submit">Send (opens WhatsApp)</button>
-      </div>
-    </form>
-  </section>
+    <footer>
+      © <span id="year"></span> Deriv_Trade — Demo environment. Not for real money trading.
+    </footer>
+  </main>
+</div>
 
-</main>
-
-<!-- Alerts -->
+<!-- ALERTS -->
 <div class="alerts" id="alerts"></div>
 
-<!-- Footer -->
-<footer>
-  <div>© <span id="year"></span> Deriv_Trade — Demo only</div>
-  <div class="muted" style="margin-top:6px">Built for presentation. To enable real trading, connect broker API & backend.</div>
-</footer>
-
-<!-- WhatsApp FAB -->
-<a href="https://wa.me/254796518099" target="_blank" style="position:fixed;right:16px;bottom:16px;background:var(--accent);padding:12px 14px;border-radius:999px;font-weight:800;z-index:200;color:#fff">WhatsApp</a>
-
 <script>
-  // small init
-  document.getElementById('year').innerText = new Date().getFullYear();
+/* ---------------------------
+   INITIAL SETUP & STATE
+   --------------------------- */
+document.getElementById('year').innerText = new Date().getFullYear();
 
-  /* ----------------------------
-     Slideshow (hero) - minimal professional
-     ---------------------------- */
-  const slidesData = [
-    { title: 'Trade with confidence', text: 'Clean demo-first environment. Switch to live when ready.', bg: 'https://images.unsplash.com/photo-1581092795367-6ca8a4b5a7e9?q=80&w=1200&auto=format&fit=crop&ixlib=rb-4.0.3&s=a1ea7c6b5c0c9a1a9e8a8f3d2f8d3f8b' },
-    { title: 'Fast deposits - M-Pesa', text: 'Pay instantly with M-Pesa Till 3675058 (demo verification only).', bg: 'https://images.unsplash.com/photo-1526378723052-9fbf78f1f6b5?q=80&w=1200&auto=format&fit=crop&ixlib=rb-4.0.3&s=6d1b2e6d8b9f8d6b9d7b6f7c6a4b6c5d' },
-    { title: 'Learn with our courses', text: 'Beginner to advanced lessons included in the demo.', bg: 'https://images.unsplash.com/photo-1496307042754-b4aa456c4a2d?q=80&w=1200&auto=format&fit=crop&ixlib=rb-4.0.3&s=3e5f4d6b7c8a9d0f1b2c3a4d5e6f7a8b' },
-  ];
-  const slidesContainer = document.createElement('div');
-  slidesContainer.className = 'slideshow';
-  const slidesEl = document.createElement('div'); slidesEl.className = 'slides';
-  slidesData.forEach(s=>{
-    const slide = document.createElement('div'); slide.className='slide';
-    slide.style.backgroundImage = `linear-gradient(180deg, rgba(0,0,0,0.0), rgba(0,0,0,0.2)), url(${s.bg})`;
-    slide.innerHTML = `<div class="content"><h3>${s.title}</h3><p>${s.text}</p></div>`;
-    slidesEl.appendChild(slide);
+const ASSETS = {
+  EURUSD: { symbol:'EUR/USD', base:1.0864, spread:0.8, type:'forex' },
+  GBPUSD: { symbol:'GBP/USD', base:1.2741, spread:1.0, type:'forex' },
+  BTCUSD: { symbol:'BTC/USD', base:37850, spread:50, type:'crypto' },
+  XAUUSD: { symbol:'XAU/USD', base:1840.30, spread:1.8, type:'commodity' },
+  USDJPY: { symbol:'USD/JPY', base:147.82, spread:2, type:'forex' }
+};
+
+let currentAsset = 'EURUSD';
+let demoState = JSON.parse(localStorage.getItem('deriv_demo_state') || JSON.stringify({
+  balance: 10000,
+  orders: [], // open orders
+  history: [] // closed
+}));
+
+function saveState(){ localStorage.setItem('deriv_demo_state', JSON.stringify(demoState)); updateUI(); }
+function resetDemo(){ if(confirm('Reset demo account?')){ demoState = { balance:10000, orders:[], history:[] }; saveState(); showAlert('Demo reset','info'); } }
+
+function updateUI(){
+  document.getElementById('sideBalance').innerText = 'KES ' + Math.round(demoState.balance);
+  document.getElementById('accountBalance').innerText = 'KES ' + Math.round(demoState.balance);
+  const openPL = demoState.orders.reduce((s,o)=> s + (o.pnl||0), 0);
+  document.getElementById('sidePL').innerText = 'KES ' + Math.round(openPL);
+  document.getElementById('accountPL').innerText = 'KES ' + Math.round(openPL);
+  renderOrders();
+  renderRecent();
+  document.getElementById('assetTitle').innerText = ASSETS[currentAsset].symbol;
+  document.getElementById('panelAsset').innerText = ASSETS[currentAsset].symbol;
+  document.getElementById('assetSpread').innerText = ASSETS[currentAsset].spread;
+  document.getElementById('assetLev').innerText = document.getElementById('leverageSelect') ? document.getElementById('leverageSelect').value : '50x';
+}
+updateUI();
+
+/* ---------------------------
+   TOP TICKER (simulated)
+   --------------------------- */
+const topTicker = document.getElementById('topTicker');
+function initTicker(){
+  topTicker.innerHTML = '';
+  Object.keys(ASSETS).forEach(k=>{
+    const t = document.createElement('div'); t.className='tick';
+    t.innerHTML = `<div class="s">${ASSETS[k].symbol}</div><div class="p">${formatPrice(ASSETS[k].base,k)}</div>`;
+    topTicker.appendChild(t);
   });
-  slidesContainer.appendChild(slidesEl);
-  // attach slideshow to hero-left top (after features)
-  const heroLeft = document.querySelector('.hero-left');
-  heroLeft.insertBefore(slidesContainer, heroLeft.children[1] || heroLeft.firstChild);
-
-  // dots
-  const slidesCount = slidesData.length;
-  const dots = document.createElement('div'); dots.className='slide-controls';
-  const dotsInner = document.createElement('div'); dotsInner.className='dots';
-  for(let i=0;i<slidesCount;i++){ const d=document.createElement('div'); d.className='dot'+(i===0?' active':''); d.dataset.index=i; d.onclick=()=>goToSlide(i); dotsInner.appendChild(d); }
-  dots.appendChild(dotsInner);
-  const heroLeftContainer = slidesContainer;
-  heroLeftContainer.appendChild(dots);
-
-  let slideIndex = 0;
-  function goToSlide(i){ slideIndex = i; slidesEl.style.transform = `translateX(-${i*100}%)`; document.querySelectorAll('.dot').forEach((el,idx)=>el.classList.toggle('active', idx===i)); }
-  function nextSlide(){ slideIndex = (slideIndex+1) % slidesCount; goToSlide(slideIndex); }
-  let slideTimer = setInterval(nextSlide, 4500);
-  slidesContainer.addEventListener('mouseenter', ()=>clearInterval(slideTimer));
-  slidesContainer.addEventListener('mouseleave', ()=>slideTimer = setInterval(nextSlide, 4500));
-
-  /* ----------------------------
-     Ticker update (small sim)
-     ---------------------------- */
-  const ticks = document.querySelectorAll('.tick .val');
-  let base = [1.0864,1.2741,37850,1840,147.82];
-  function updateTicks(){
-    base = base.map((v,i)=> {
-      const vol = (i===2)?0.01:0.0025;
-      const next = +(v * (1 + (Math.random()-0.5)*vol));
-      return Math.round((i===2?next:next)* (i===2?1:10000))/ (i===2?1:10000);
-    });
-    ticks[0].innerText = base[0]; ticks[1].innerText = base[1]; ticks[2].innerText = '$' + base[2].toLocaleString(); ticks[3].innerText = '$' + base[3]; ticks[4].innerText = base[4];
-  }
-  setInterval(updateTicks, 3200);
-  updateTicks();
-
-  /* ----------------------------
-     Chart.js live-like chart
-     ---------------------------- */
-  const ctx = document.getElementById('chartCanvas').getContext('2d');
-  const labels = []; const dataset = [];
-  for(let i=30;i>=0;i--){ labels.push(new Date(Date.now()-i*60000).toLocaleTimeString().slice(0,5)); dataset.push((1.06 + Math.random()*0.03).toFixed(4)); }
-  const chart = new Chart(ctx, {
-    type: 'line',
-    data: { labels, datasets: [{ data: dataset, borderColor: 'rgba(227,6,19,0.95)', backgroundColor: 'rgba(227,6,19,0.06)', tension:0.25, pointRadius:0 }] },
-    options: { responsive:true, plugins:{ legend:{display:false} }, scales:{ x:{display:true}, y:{display:true} } }
+}
+function tickTicker(){
+  Object.keys(ASSETS).forEach((k, idx)=>{
+    const asset = ASSETS[k];
+    const vol = asset.type === 'crypto' ? 0.02 : 0.002;
+    const next = +(asset.base * (1 + (Math.random()-0.5)*vol)).toFixed(asset.type==='crypto'?0:4);
+    asset.base = next;
   });
-  function pushChartPoint(){
-    const sym = document.getElementById('symbol').value;
-    const next = (1.06 + Math.random()*0.03).toFixed(4);
-    chart.data.labels.push(new Date().toLocaleTimeString().slice(0,5));
-    chart.data.datasets[0].data.push(next);
-    if(chart.data.labels.length>60){ chart.data.labels.shift(); chart.data.datasets[0].data.shift(); }
-    chart.update();
-    evaluatePnl();
-  }
-  setInterval(pushChartPoint, 4000);
+  // refresh DOM
+  Array.from(topTicker.children).forEach((el, i)=>{
+    const k = Object.keys(ASSETS)[i];
+    el.querySelector('.p').innerText = formatPrice(ASSETS[k].base, k);
+  });
+}
+function formatPrice(v, key){
+  if(key === 'BTCUSD' || key === 'XAUUSD') return '$' + Number(v).toLocaleString();
+  if(key === 'USDJPY') return v.toFixed(2);
+  return v.toFixed(4);
+}
+initTicker();
+setInterval(tickTicker, 2500);
 
-  /* ----------------------------
-     Demo trading engine (front-end-only)
-     ---------------------------- */
-  const STORAGE = 'deriv_trade_demo_v2';
-  let state = JSON.parse(localStorage.getItem(STORAGE) || JSON.stringify({ balance:10000, orders:[] }));
+/* ---------------------------
+   MAIN CHART (Chart.js simulated)
+   --------------------------- */
+const ctx = document.getElementById('mainChart').getContext('2d');
+let chartLabels = [], chartData = [];
+for(let i=30;i>=0;i--){ chartLabels.push(new Date(Date.now()-i*60000).toLocaleTimeString().slice(0,5)); chartData.push(ASSETS[currentAsset].base); }
+const mainChart = new Chart(ctx, {
+  type:'line',
+  data: { labels: chartLabels, datasets:[{ data: chartData, borderColor: 'rgba(227,6,19,0.95)', backgroundColor:'rgba(227,6,19,0.06)', tension:0.25, pointRadius:0 }] },
+  options: { responsive:true, plugins:{ legend:{display:false} }, scales:{ x:{ display:true }, y:{ display:true } } }
+});
+function pushChart(){
+  const next = +(ASSETS[currentAsset].base * (1 + (Math.random()-0.5)*0.003)).toFixed(currentAsset==='BTCUSD'?0:4);
+  mainChart.data.labels.push(new Date().toLocaleTimeString().slice(0,5));
+  mainChart.data.datasets[0].data.push(next);
+  if(mainChart.data.labels.length>60){ mainChart.data.labels.shift(); mainChart.data.datasets[0].data.shift(); }
+  mainChart.update();
+  // update pnl evaluation
+  evaluateOpenPnl();
+}
+setInterval(()=>{
+  // simulate asset base movement too
+  const key = currentAsset;
+  ASSETS[key].base = +(ASSETS[key].base * (1 + (Math.random()-0.5)*0.003)).toFixed(key==='BTCUSD'?0:4);
+  pushChart();
+}, 3500);
 
-  function save(){ localStorage.setItem(STORAGE, JSON.stringify(state)); renderOrders(); updateBalances(); }
-  function updateBalances(){ document.getElementById('demoBalance').innerText = 'KES ' + Math.round(state.balance); const total = state.orders.reduce((s,o)=>s+(o.pnl||0),0); document.getElementById('demoPl').innerText = 'KES ' + total; document.getElementById('balance').innerText = 'KES ' + Math.round(state.balance); document.getElementById('pl').innerText = 'KES ' + total; }
-  function renderOrders(){
-    const el = document.getElementById('orders'); el.innerHTML='';
-    if(!state.orders.length) { el.innerHTML = '<div class="muted">No orders yet</div>'; return; }
-    state.orders.slice().reverse().forEach(o=>{
-      const node = document.createElement('div'); node.className='order';
-      node.innerHTML = `<div style="display:flex;justify-content:space-between"><div><strong>${o.side.toUpperCase()} ${o.symbol}</strong><div class="muted">${o.time}</div></div><div style="text-align:right"><div style="font-weight:900">KES ${o.pnl||0}</div><div class="muted">Entry ${o.entry}</div></div></div>`;
-      el.appendChild(node);
-    });
-  }
-  renderOrders(); updateBalances();
+/* ---------------------------
+   ORDERS / DEMO TRADING
+   - openOrder: creates a pending order with 10s countdown
+   - execute pending -> fills at current price and becomes open position
+   - close position -> realize P/L and return margin + pnl to balance
+   --------------------------- */
+function openOrder(side){
+  // small UI-based quick open (center chart controls)
+  const size = parseFloat(document.getElementById('sizeInput').value) || 1;
+  const lev = parseInt(document.getElementById('leverageSelect').value) || 50;
+  createPending(side, size, lev);
+}
+function createPending(side, size, lev){
+  const entry = ASSETS[currentAsset].base;
+  const margin = Math.max(50, Math.round((size * (currentAsset==='BTCUSD' ? entry/100 : entry)) / lev));
+  if(demoState.balance < margin){ showAlert('Insufficient demo balance for margin KES ' + margin, 'error'); return; }
+  demoState.balance -= margin;
+  const pending = {
+    id: 'p'+Date.now(),
+    side, symbol: currentAsset, size, lev, entry, margin,
+    status:'pending', created: Date.now(), countdown:10, time: new Date().toLocaleTimeString()
+  };
+  demoState.orders.push(pending);
+  saveStateDebounced();
+  showAlert(`${side.toUpperCase()} pending: execution in 10s`, 'info');
+  // start countdown
+  const tickId = setInterval(()=>{
+    pending.countdown--;
+    saveStateDebounced();
+    if(pending.countdown <=0){
+      clearInterval(tickId);
+      executeOrder(pending.id);
+    }
+  },1000);
+}
+function executeOrder(pendingId){
+  const idx = demoState.orders.findIndex(o=>o.id===pendingId);
+  if(idx === -1) return;
+  const o = demoState.orders[idx];
+  // fill price: current asset base +- tiny slippage
+  const slippage = (Math.random()-0.5) * (o.side==='buy' ? 0.0002 : 0.0002);
+  const execPrice = +(ASSETS[o.symbol].base * (1 + slippage)).toFixed(o.symbol==='BTCUSD'?0:4);
+  const position = {
+    id: 'pos'+Date.now(),
+    side: o.side, symbol:o.symbol, size:o.size, lev:o.lev, entry: execPrice,
+    margin: o.margin, status:'open', openedAt: new Date().toLocaleString(), pnl:0
+  };
+  // remove pending and add position in history (store open positions in orders array)
+  demoState.orders.splice(idx,1);
+  demoState.orders.push(position);
+  saveStateDebounced();
+  showAlert(`${position.side.toUpperCase()} executed @ ${position.entry}`, 'success');
+}
+function evaluateOpenPnl(){
+  demoState.orders.forEach(o=>{
+    if(o.status !== 'open') return;
+    const current = ASSETS[o.symbol].base;
+    const sign = o.side === 'buy' ? 1 : -1;
+    const pnl = Math.round((current - o.entry) * o.size * 1000 * sign); // simplified
+    o.pnl = pnl;
+  });
+  saveStateDebounced();
+}
+function closeAll(){
+  if(demoState.orders.length === 0) { showAlert('No open positions','info'); return; }
+  let realized = 0;
+  // close all open positions
+  const remaining = [];
+  demoState.orders.forEach(o=>{
+    if(o.status === 'open'){
+      const pnl = o.pnl || 0;
+      realized += pnl;
+      demoState.balance += o.margin + pnl;
+      demoState.history.push({ side:o.side, symbol:o.symbol, size:o.size, entry:o.entry, pnl, closedAt: new Date().toLocaleString() });
+    } else {
+      // pending orders refunded margin + cancelled
+      if(o.status === 'pending'){
+        demoState.balance += o.margin; // refund
+        demoState.history.push({ side:o.side, symbol:o.symbol, remark:'pending cancelled', closedAt: new Date().toLocaleTimeString() });
+      }
+    }
+  });
+  demoState.orders = remaining;
+  saveStateDebounced();
+  showAlert('All positions closed. Realized KES ' + realized, 'success');
+}
+function placeTrade(side){
+  // right panel trade placement
+  const size = parseFloat(document.getElementById('panelSize').value) || 1;
+  const lev = parseInt(document.getElementById('panelLev').value) || 50;
+  createPending(side, size, lev);
+}
 
-  function placeDemo(side){
-    const symbol = document.getElementById('symbol').value;
-    const size = parseFloat(document.getElementById('size').value) || 1;
-    const lev = parseInt(document.getElementById('lev').value) || 10;
-    // entry price from last chart point
-    const entry = parseFloat(chart.data.datasets[0].data.slice(-1)[0]) || 1.08;
-    const margin = Math.max(50, Math.round((size * (symbol.includes('BTC') ? entry/100 : entry)) / lev));
-    if(state.balance < margin){ alert('Insufficient demo balance for margin KES ' + margin); return; }
-    state.balance -= margin;
-    const order = { id:'o'+Date.now(), side, symbol, size, lev, entry, margin, pnl:0, time:new Date().toLocaleString(), status:'open' };
-    state.orders.push(order);
-    save();
-    showAlert(`${side.toUpperCase()} ${symbol} placed (demo)`, 'success');
-  }
+/* ---------------------------
+   RENDER ORDERS & HISTORY
+   --------------------------- */
+function renderOrders(){
+  const el = document.getElementById('orderBook'); el.innerHTML = '';
+  if(demoState.orders.length === 0){ el.innerHTML = '<div class="small muted">No positions or pending orders</div>'; return; }
+  demoState.orders.slice().reverse().forEach(o=>{
+    const div = document.createElement('div'); div.className = 'order';
+    if(o.status === 'pending'){
+      div.innerHTML = `<div><strong>${o.side.toUpperCase()} (pending)</strong><div class="meta">Asset: ${ASSETS[o.symbol].symbol} • Size: ${o.size} • Margin: KES ${o.margin}</div></div>
+                      <div style="text-align:right"><div class="small">Exec in ${o.countdown}s</div><div class="small">${o.time}</div></div>`;
+    } else if(o.status === 'open' || o.id && o.id.startsWith('pos')){
+      div.innerHTML = `<div><strong>${o.side.toUpperCase()}</strong><div class="meta">Entry: ${o.entry} • Size: ${o.size} • Margin: KES ${o.margin}</div></div>
+                      <div style="text-align:right"><div style="font-weight:800">${o.pnl? 'KES '+o.pnl : 'KES 0'}</div><div class="small">${o.openedAt||o.time||''}</div></div>`;
+    } else {
+      div.innerHTML = `<div><strong>${o.side}</strong><div class="meta">Status: ${o.status}</div></div>`;
+    }
+    el.appendChild(div);
+  });
+}
+function renderRecent(){
+  const el = document.getElementById('recentTrades'); el.innerHTML = '';
+  if(!demoState.history || demoState.history.length ===0){ el.innerHTML = '<div class="small muted">No history</div>'; return; }
+  demoState.history.slice().reverse().slice(0,8).forEach(h=>{
+    const d = document.createElement('div'); d.className='order'; d.innerHTML = `<div><strong>${h.side || ''} ${h.symbol||''}</strong><div class="meta">${h.closedAt || h.time || ''}</div></div><div style="text-align:right"><div class="small">${h.pnl? 'KES '+h.pnl : h.remark || ''}</div></div>`;
+    el.appendChild(d);
+  });
+}
 
-  function evaluatePnl(){
-    let total = 0;
-    const current = parseFloat(chart.data.datasets[0].data.slice(-1)[0]) || 1.07;
-    state.orders.forEach(o=>{
-      const sign = o.side === 'buy' ? 1 : -1;
-      const pnl = Math.round((current - o.entry) * o.size * 1000 * sign);
-      o.pnl = pnl;
-      total += pnl;
-    });
-    save(); // updates UI
-  }
+/* ---------------------------
+   UTILITIES: alerts, export
+   --------------------------- */
+function showAlert(msg, type='info', t=4500){
+  const wrap = document.getElementById('alerts');
+  const el = document.createElement('div'); el.className='alert'; el.innerHTML = `<div style="font-weight:800">${msg}</div><div class="small">${type}</div>`;
+  wrap.appendChild(el); setTimeout(()=> el.remove(), t);
+}
+function exportHistory(){
+  const content = JSON.stringify(demoState, null, 2);
+  const blob = new Blob([content], { type:'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'deriv_trade_demo_history.json'; a.click();
+  URL.revokeObjectURL(url);
+  showAlert('Export ready','info');
+}
 
-  function closeDemo(){
-    if(!state.orders.length) return showAlert('No open demo orders', 'info');
-    let realized = 0;
-    state.orders.forEach(o=>{ realized += o.pnl || 0; state.balance += o.margin; });
-    state.balance += realized;
-    state.orders = [];
-    save();
-    showAlert('All demo orders closed. Realized KES ' + realized, 'success');
-  }
+/* ---------------------------
+   HELPERS & small UI actions
+   --------------------------- */
+function setView(v){
+  document.querySelectorAll('#menu button').forEach(b=>b.classList.remove('active'));
+  const btn = document.querySelector(`#menu button[data-view="${v}"]`);
+  if(btn) btn.classList.add('active');
+  showAlert(`Switched to ${v}`, 'info', 1400);
+}
+function changeAsset(val){
+  currentAsset = val;
+  document.getElementById('assetTitle').innerText = ASSETS[val].symbol;
+  document.getElementById('panelAsset').innerText = ASSETS[val].symbol;
+  // reset chart with new base
+  mainChart.data.datasets[0].data = mainChart.data.datasets[0].data.map(()=>ASSETS[val].base);
+  mainChart.update();
+  showAlert('Switched to ' + ASSETS[val].symbol, 'info');
+}
+function depositDemo(){
+  const v = parseFloat(prompt('Enter deposit KES amount', '1000'));
+  if(!v || isNaN(v) || v<=0){ showAlert('Invalid amount','error'); return; }
+  demoState.balance += v; saveStateDebounced(); showAlert('Demo deposit KES ' + v,'success');
+}
 
-  function depositDemo(){
-    const v = parseFloat(prompt('Enter demo deposit amount (KES)', '1000'));
-    if(!v || isNaN(v) || v<=0) return;
-    state.balance += v; save(); showAlert('Demo deposit KES ' + v, 'success');
-  }
-  function resetDemo(){ if(confirm('Reset demo data?')){ state = { balance:10000, orders:[] }; save(); showAlert('Demo reset','info'); } }
+/* ---------------------------
+   STATE SAVE debounce and init
+   --------------------------- */
+let saveTimeout = null;
+function saveStateDebounced(){
+  if(saveTimeout) clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(()=>{ localStorage.setItem('deriv_demo_state', JSON.stringify(demoState)); updateUI(); }, 300);
+}
+function saveStateImmediate(){ localStorage.setItem('deriv_demo_state', JSON.stringify(demoState)); updateUI(); }
+saveStateImmediate();
 
-  /* ----------------------------
-     Simple utilities: alerts, contact
-     ---------------------------- */
-  function showAlert(text, type='info', t=4500){
-    const c = document.getElementById('alerts');
-    const el = document.createElement('div'); el.className='alert';
-    el.innerHTML = `<div style="font-weight:800">${text}</div><div class="muted" style="font-size:12px">${type}</div>`;
-    c.appendChild(el); setTimeout(()=>el.remove(), t);
-  }
+/* expose some funcs to window for buttons */
+window.depositDemo = depositDemo;
+window.resetDemo = resetDemo;
+window.openOrder = openOrder;
+window.openTrade = openOrder;
+window.placeTrade = placeTrade;
+window.closeAll = closeAll;
+window.exportHistory = exportHistory;
+window.setView = setView;
 
-  function handleContact(e){
-    e.preventDefault();
-    const n = document.getElementById('name').value.trim();
-    const em = document.getElementById('email').value.trim();
-    const msg = document.getElementById('message').value.trim();
-    const text = `Contact from Deriv_Trade\nName: ${n}\nEmail: ${em}\nMessage: ${msg}`;
-    window.open('https://wa.me/254796518099?text=' + encodeURIComponent(text), '_blank');
-    showAlert('Opened WhatsApp with message', 'info');
-    e.target.reset();
-  }
-
-  /* export history (simple) */
-  function exportHistory(){
-    const text = JSON.stringify(state, null, 2);
-    const blob = new Blob([text], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = 'deriv_trade_history.json'; a.click(); URL.revokeObjectURL(url);
-  }
-
-  /* small initial welcome */
-  setTimeout(()=> showAlert('Welcome to Deriv_Trade (Minimal Professional) — demo only', 'info', 7000), 700);
-
-  // Expose used functions to buttons
-  window.placeDemo = placeDemo;
-  window.closeDemo = closeDemo;
-  window.depositDemo = depositDemo;
-  window.resetDemo = resetDemo;
-  window.handleContact = handleContact;
-  window.exportHistory = exportHistory;
+/* initial render */
+renderOrders();
+renderRecent();
+updateUI();
 
 </script>
 </body>
-  </html>
+                </html>
