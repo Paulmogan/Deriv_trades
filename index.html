@@ -1,199 +1,207 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Deriv_Trade — Dashboard</title>
-<meta name="description" content="Deriv_Trade — Smart forex signals, payments & training (Black & Red)." />
-<!-- Chart.js CDN -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Deriv_Trade — Dashboard</title>
+  <meta name="description" content="Deriv_Trade — Smart forex signals, payments & training (Black & Red)." />
+  <meta name="theme-color" content="#000000" />
+  <link rel="icon" href="data:," />
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+  <style>
+    :root{
+      --bg:#000;
+      --panel:#0d0d0d;
+      --accent:#e30613;
+      --muted:#bdbdbd;
+      --glass: rgba(255,255,255,0.03);
+      --smooth: 0.18;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;font-family:Inter,system-ui,Arial,Helvetica,sans-serif; background:var(--bg);color:#fff; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale}
+    a{color:inherit;text-decoration:none}
 
-<style>
-  :root{
-    --bg:#000;
-    --panel:#0d0d0d;
-    --accent:#e30613;
-    --muted:#bdbdbd;
-    --glass: rgba(255,255,255,0.03);
-  }
-  *{box-sizing:border-box}
-  body{margin:0;font-family:Inter,system-ui,Arial; background:var(--bg);color:#fff; -webkit-font-smoothing:antialiased;}
-  a{color:inherit;text-decoration:none}
+    /* Header */
+    header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:3px solid var(--accent);background:linear-gradient(90deg,#070707,#0b0b0b)}
+    .brand{display:flex;gap:12px;align-items:center}
+    .logo{width:48px;height:48px;background:linear-gradient(135deg,#e00,#900);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:20px}
+    h1{margin:0;font-size:18px;color:var(--accent);letter-spacing:0.6px}
+    nav{display:flex;gap:8px;align-items:center}
+    nav button, nav .cta{background:transparent;color:#fff;border:1px solid rgba(255,0,0,0.08);padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:600}
+    nav button:hover,nav .cta:hover{background:rgba(255,0,0,0.06)}
+    nav .cta{background:var(--accent);border:none;color:#fff}
 
-  /* Header */
-  header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:3px solid var(--accent);background:linear-gradient(90deg,#070707,#0b0b0b)}
-  .brand{display:flex;gap:12px;align-items:center}
-  .logo{width:44px;height:44px;background:linear-gradient(135deg,#e00,#900);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:20px}
-  h1{margin:0;font-size:18px;color:var(--accent);letter-spacing:0.6px}
-  nav{display:flex;gap:10px;align-items:center}
-  nav button{background:transparent;color:#fff;border:1px solid rgba(255,0,0,0.08);padding:8px 10px;border-radius:8px;cursor:pointer;font-weight:600}
-  nav button:hover{background:rgba(255,0,0,0.06)}
+    /* Container */
+    .wrap{max-width:1150px;margin:26px auto;padding:0 18px}
 
-  /* Container */
-  .wrap{max-width:1150px;margin:26px auto;padding:0 18px}
+    /* HERO SLIDER */
+    .hero{position:relative;height:320px;border-radius:12px;overflow:hidden;background:#060606;display:flex;align-items:center;justify-content:center;border:1px solid #111}
+    .slides{display:flex;transition:transform .8s cubic-bezier(.2,.9,.2,1);height:100%;width:300%}
+    .slide{flex:0 0 100%;padding:28px;display:flex;gap:20px;align-items:center}
+    .slide .left{flex:1}
+    .slide .right{flex:1;display:flex;align-items:center;justify-content:center}
+    .slide h2{color:var(--accent);margin:0 0 10px;font-size:26px}
+    .slide p{color:var(--muted);margin:0 0 18px}
+    .slider-controls{position:absolute;left:12px;right:12px;bottom:12px;display:flex;justify-content:space-between;align-items:center}
+    .dots{display:flex;gap:8px}
+    .dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,0.08);cursor:pointer}
+    .dot.active{background:var(--accent);box-shadow:0 6px 16px rgba(227,6,19,0.14)}
 
-  /* HERO SLIDER */
-  .hero{position:relative;height:320px;border-radius:12px;overflow:hidden;background:#060606;display:flex;align-items:center;justify-content:center;border:1px solid #111}
-  .slides{display:flex;transition:transform .8s cubic-bezier(.2,.9,.2,1);height:100%;width:300%}
-  .slide{flex:0 0 100%;padding:34px;display:flex;gap:20px;align-items:center}
-  .slide .left{flex:1}
-  .slide .right{flex:1;display:flex;align-items:center;justify-content:center}
-  .slide h2{color:var(--accent);margin:0 0 10px;font-size:28px}
-  .slide p{color:var(--muted);margin:0 0 18px}
-  .slider-controls{position:absolute;left:12px;right:12px;bottom:12px;display:flex;justify-content:space-between;align-items:center}
-  .dots{display:flex;gap:8px}
-  .dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,0.08);cursor:pointer}
-  .dot.active{background:var(--accent);box-shadow:0 6px 16px rgba(227,6,19,0.14)}
+    .btn{background:var(--accent);color:#fff;padding:10px 14px;border-radius:9px;border:none;cursor:pointer;font-weight:700}
+    .btn.ghost{background:transparent;border:1px solid rgba(255,0,0,0.12);color:var(--muted)}
+    .muted{color:var(--muted)}
 
-  .btn{background:var(--accent);color:#fff;padding:10px 14px;border-radius:9px;border:none;cursor:pointer;font-weight:700}
-  .btn.ghost{background:transparent;border:1px solid rgba(255,0,0,0.12);color:var(--muted)}
-  .muted{color:var(--muted)}
+    /* Grid */
+    .grid{display:grid;grid-template-columns:1fr 380px;gap:18px;margin-top:18px}
+    @media (max-width:980px){.grid{grid-template-columns:1fr}.hero{height:420px}.slide{flex-direction:column-reverse;padding:18px}}
 
-  /* Grid */
-  .grid{display:grid;grid-template-columns:1fr 380px;gap:18px;margin-top:18px}
-  @media (max-width:980px){.grid{grid-template-columns:1fr}.hero{height:300px}}
+    /* Cards */
+    .card{background:linear-gradient(180deg,rgba(255,255,255,0.01),var(--glass));padding:14px;border-radius:10px;border:1px solid #141414}
+    .card h3{margin:0;color:var(--accent);font-size:16px}
 
-  /* Cards */
-  .card{background:linear-gradient(180deg,rgba(255,255,255,0.01),var(--glass));padding:14px;border-radius:10px;border:1px solid #141414}
-  .card h3{margin:0;color:var(--accent);font-size:16px}
+    /* Live prices list */
+    .prices{display:flex;gap:10px;flex-wrap:wrap}
+    .price{background:#0b0b0b;padding:12px;border-radius:8px;border-left:4px solid rgba(227,6,19,0.9);min-width:150px}
 
-  /* Live prices list */
-  .prices{display:flex;gap:10px;flex-wrap:wrap}
-  .price{background:#0b0b0b;padding:12px;border-radius:8px;border-left:4px solid rgba(227,6,19,0.9);min-width:150px}
+    /* Dashboard (right column) */
+    .right-col .balance{display:flex;justify-content:space-between;align-items:center;padding:12px;border-radius:8px}
+    .bal-amount{font-size:22px;font-weight:800;color:var(--accent)}
+    .trans-list{max-height:260px;overflow:auto;margin-top:12px}
 
-  /* Dashboard (right column) */
-  .right-col .balance{display:flex;justify-content:space-between;align-items:center;padding:12px;border-radius:8px}
-  .bal-amount{font-size:22px;font-weight:800;color:var(--accent)}
-  .trans-list{max-height:260px;overflow:auto;margin-top:12px}
+    /* Chart */
+    .chart-wrap{height:300px;padding:8px}
 
-  /* Chart */
-  .chart-wrap{height:300px;padding:8px}
+    /* Form */
+    .form-row{display:flex;gap:8px}
+    input,select,textarea{background:#0b0b0b;border:1px solid rgba(255,0,0,0.06);padding:10px;border-radius:8px;color:#fff;width:100%}
 
-  /* Form */
-  .form-row{display:flex;gap:8px}
-  input,select,textarea{background:#0b0b0b;border:1px solid rgba(255,0,0,0.06);padding:10px;border-radius:8px;color:#fff;width:100%}
+    /* Login/signup modal */
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:90;opacity:0;pointer-events:none;transition:opacity .2s}
+    .modal.show{opacity:1;pointer-events:auto}
+    .modal-box{width:420px;background:linear-gradient(180deg,#0b0b0b,#090909);padding:18px;border-radius:12px;border:1px solid #161616}
+    .tab-btns{display:flex;gap:8px;margin-bottom:12px}
+    .tab-btn{flex:1;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.03);cursor:pointer}
+    .tab-btn.active{background:var(--accent);color:#fff;border:none}
 
-  /* Login/signup modal */
-  .modal{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:90;opacity:0;pointer-events:none;transition:opacity .2s}
-  .modal.show{opacity:1;pointer-events:auto}
-  .modal-box{width:380px;background:linear-gradient(180deg,#0b0b0b,#090909);padding:18px;border-radius:12px;border:1px solid #161616}
-  .tab-btns{display:flex;gap:8px;margin-bottom:12px}
-  .tab-btn{flex:1;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.03);cursor:pointer}
-  .tab-btn.active{background:var(--accent);color:#fff;border:none}
+    /* Footer */
+    footer{margin-top:28px;padding:18px;text-align:center;color:var(--muted);border-top:1px solid #141414}
+    .socials{display:flex;gap:12px;justify-content:center;margin-top:10px}
 
-  /* Footer */
-  footer{margin-top:28px;padding:18px;text-align:center;color:var(--muted);border-top:1px solid #141414}
-  .socials{display:flex;gap:12px;justify-content:center;margin-top:10px}
+    /* small touches */
+    .chip{padding:6px 8px;border-radius:8px;background:#080808;border:1px solid rgba(255,255,255,0.02)}
+    button.small{padding:8px 10px;font-weight:700;border-radius:8px}
+    .success{color:#2bd17d}
 
-  /* small touches */
-  .chip{padding:6px 8px;border-radius:8px;background:#080808;border:1px solid rgba(255,255,255,0.02)}
-  button.small{padding:8px 10px;font-weight:700;border-radius:8px}
-  .success{color:#2bd17d}
+    /* accessibility helpers */
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 
-  /* animations */
-  .fade-in{animation:fadeIn .5s ease both}
-  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-</style>
+    /* animations */
+    .fade-in{animation:fadeIn .5s ease both}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  </style>
 </head>
 <body>
 
 <header>
   <div class="brand">
-    <div class="logo">DT</div>
+    <div class="logo" aria-hidden>DT</div>
     <div>
       <h1>Deriv_Trade</h1>
       <div class="muted" style="font-size:12px">Smart Forex • Signals • Payments</div>
     </div>
   </div>
 
-  <nav>
+  <nav aria-label="Main navigation">
     <button onclick="showSection('home')">Home</button>
     <button onclick="showSection('dashboard')">Dashboard</button>
-    <button onclick="openModal('login')">Login / Signup</button>
+    <a class="cta" id="waPay" href="#" target="_blank" rel="noopener">Pay / WhatsApp</a>
+    <button onclick="openModal('login')">Login</button>
   </nav>
 </header>
 
 <div class="wrap">
 
   <!-- HOME / LANDING -->
-  <div id="home" class="fade-in">
-    <div class="hero card">
+  <main id="home" class="fade-in" aria-live="polite">
+    <section class="hero card" aria-roledescription="carousel">
       <div class="slides" id="slides">
-        <div class="slide">
+        <article class="slide" aria-label="Trade with confidence">
           <div class="left">
             <h2>Trade with confidence</h2>
-            <p class="muted">Accurate signals and fast payments. M-Pesa Till: <strong style="color:var(--accent)">3675058</strong></p>
+            <p class="muted">Accurate signals and fast payments. M-Pesa Till: <strong style="color:var(--accent)" id="tillNo">3675058</strong></p>
             <div style="margin-top:12px">
               <button class="btn" onclick="showSection('dashboard')">Go to Dashboard</button>
               <button class="btn ghost" onclick="openModal('signup')">Start Free</button>
             </div>
           </div>
-          <div class="right"><img src="https://images.unsplash.com/photo-1559523160-1a5c3f6f0a12?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=11c7f6eed9b3d0db4a8cc3aca58658bf" alt="" style="max-width:100%;border-radius:8px;box-shadow:0 12px 40px rgba(0,0,0,0.6)"></div>
-        </div>
+          <div class="right"><img loading="lazy" src="https://images.unsplash.com/photo-1559523160-1a5c3f6f0a12?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=11c7f6eed9b3d0db4a8cc3aca58658bf" alt="Trading desk" style="max-width:100%;border-radius:8px;box-shadow:0 12px 40px rgba(0,0,0,0.6)"></div>
+        </article>
 
-        <div class="slide">
+        <article class="slide" aria-label="Live signals & courses">
           <div class="left">
             <h2>Live Signals & Courses</h2>
             <p class="muted">Learn price action, manage risk, and copy professional signals. Beginner to VIP packages available.</p>
             <div style="margin-top:12px"><button class="btn" onclick="openPricing()">See Pricing</button></div>
           </div>
-          <div class="right"><img src="https://images.unsplash.com/photo-1531297484001-80022131f5a1?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=9f23a2cd2b3d7a3172a6b9a4b2b3e6fc" style="max-width:100%;border-radius:8px"></div>
-        </div>
+          <div class="right"><img loading="lazy" src="https://images.unsplash.com/photo-1531297484001-80022131f5a1?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=9f23a2cd2b3d7a3172a6b9a4b2b3e6fc" alt="Chart learning" style="max-width:100%;border-radius:8px"></div>
+        </article>
 
-        <div class="slide">
+        <article class="slide" aria-label="Fast payments">
           <div class="left">
             <h2>Fast Payments (M-Pesa)</h2>
-            <p class="muted">Deposit instantly using M-Pesa Till 3675058. Send the transaction ID via WhatsApp for quick verification.</p>
+            <p class="muted">Deposit instantly using M-Pesa Till <strong style="color:var(--accent)">3675058</strong>. Send the transaction ID via WhatsApp for quick verification.</p>
             <div style="margin-top:12px"><button class="btn" onclick="payPrompt()">Pay Now</button></div>
           </div>
-          <div class="right"><img src="https://images.unsplash.com/photo-1532634896-26909d0d3d57?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=0f7f2d1b4b2e2a5e5c3a1a1d1f0b2c7b" style="max-width:100%;border-radius:8px"></div>
-        </div>
+          <div class="right"><img loading="lazy" src="https://images.unsplash.com/photo-1532634896-26909d0d3d57?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=0f7f2d1b4b2e2a5e5c3a1a1d1f0b2c7b" alt="Mobile payment" style="max-width:100%;border-radius:8px"></div>
+        </article>
       </div>
 
       <div class="slider-controls">
-        <div class="dots" id="dots"></div>
+        <div class="dots" id="dots" role="tablist"></div>
         <div>
-          <button class="chip" onclick="prevSlide()">Prev</button>
-          <button class="chip" onclick="nextSlide()">Next</button>
+          <button class="chip" onclick="prevSlide()" aria-label="Previous slide">Prev</button>
+          <button class="chip" onclick="nextSlide()" aria-label="Next slide">Next</button>
         </div>
       </div>
-    </div>
+    </section>
 
     <!-- Grid: main + right -->
     <div class="grid">
 
       <!-- left big column -->
       <div>
-        <div class="card" style="margin-top:12px">
+        <section class="card" style="margin-top:12px">
           <h3>Live Market Prices</h3>
-          <div class="prices" id="prices">
+          <div class="prices" id="prices" aria-live="polite">
             <!-- placeholder prices -->
             <div class="price">EUR/USD <div class="muted">1.0864</div></div>
             <div class="price">GBP/USD <div class="muted">1.2741</div></div>
             <div class="price">USD/JPY <div class="muted">147.82</div></div>
             <div class="price">XAU/USD <div class="muted">1,840.30</div></div>
           </div>
-        </div>
+        </section>
 
-        <div class="card" style="margin-top:12px">
+        <section class="card" style="margin-top:12px">
           <h3>Signals</h3>
           <div style="margin-top:10px">
             <div class="chip">BUY EUR/USD — TP 1.0990 • SL 1.0790</div>
             <div class="chip" style="margin-left:8px">SELL XAU/USD — TP 2280 • SL 2330</div>
           </div>
-        </div>
+        </section>
 
-        <div class="card" style="margin-top:12px">
+        <section class="card" style="margin-top:12px">
           <h3>Courses</h3>
           <p class="muted">Beginner course • Advanced strategy • Risk management</p>
           <div style="margin-top:12px">
             <button class="btn" onclick="openModal('signup')">Join a Course</button>
           </div>
-        </div>
+        </section>
       </div>
 
       <!-- right column -->
-      <div class="right-col">
+      <aside class="right-col">
         <div class="card">
           <div class="balance">
             <div>
@@ -207,7 +215,7 @@
           </div>
 
           <div style="margin-top:12px" class="chart-wrap card">
-            <canvas id="priceChart" style="max-height:260px"></canvas>
+            <canvas id="priceChart" style="max-height:260px" aria-label="Price chart"></canvas>
           </div>
 
           <div style="margin-top:12px">
@@ -215,15 +223,19 @@
             <div class="trans-list" id="transList">
               <!-- transactions -->
             </div>
+            <div style="margin-top:8px;display:flex;gap:8px">
+              <button class="btn ghost" onclick="exportCSV()">Export CSV</button>
+              <button class="btn" onclick="clearTransactions()">Clear</button>
+            </div>
           </div>
 
         </div>
-      </div>
+      </aside>
     </div>
-  </div>
+  </main>
 
   <!-- DASHBOARD view -->
-  <div id="dashboard" style="display:none">
+  <section id="dashboard" style="display:none">
     <div class="card">
       <div style="display:flex;justify-content:space-between;align-items:center">
         <h3>Dashboard</h3>
@@ -254,12 +266,12 @@
         </div>
       </div>
     </div>
-  </div>
+  </section>
 
 </div>
 
 <!-- Login / Signup Modal -->
-<div id="modal" class="modal">
+<div id="modal" class="modal" role="dialog" aria-modal="true" aria-hidden="true">
   <div class="modal-box fade-in">
     <div class="tab-btns">
       <button id="tabLogin" class="tab-btn active">Login</button>
@@ -268,10 +280,10 @@
 
     <div id="loginBox">
       <div style="margin-bottom:10px">
-        <input id="loginPhone" placeholder="Phone (2547...)" />
+        <input id="loginPhone" placeholder="Phone (2547...)" aria-label="Phone" />
       </div>
       <div style="margin-bottom:12px">
-        <input id="loginPass" type="password" placeholder="Password" />
+        <input id="loginPass" type="password" placeholder="Password" aria-label="Password" />
       </div>
       <div style="display:flex;gap:8px">
         <button class="btn" onclick="doLogin()">Login</button>
@@ -282,13 +294,13 @@
 
     <div id="signupBox" style="display:none">
       <div style="margin-bottom:10px">
-        <input id="signupName" placeholder="Full name" />
+        <input id="signupName" placeholder="Full name" aria-label="Full name" />
       </div>
       <div style="margin-bottom:10px">
-        <input id="signupPhone" placeholder="Phone (2547...)" />
+        <input id="signupPhone" placeholder="Phone (2547...)" aria-label="Phone" />
       </div>
       <div style="margin-bottom:12px">
-        <input id="signupPass" type="password" placeholder="Password" />
+        <input id="signupPass" type="password" placeholder="Password" aria-label="Password" />
       </div>
       <div style="display:flex;gap:8px">
         <button class="btn" onclick="doSignup()">Create account</button>
@@ -302,7 +314,7 @@
 <footer>
   <div>© <span id="yr"></span> Deriv_Trade</div>
   <div class="socials">
-    <a href="https://wa.me/254796518099" target="_blank" class="chip">WhatsApp</a>
+    <a id="waLink" href="#" target="_blank" class="chip">WhatsApp</a>
     <a href="#" class="chip">Instagram</a>
     <a href="#" class="chip">Facebook</a>
     <a href="#" class="chip">TikTok</a>
@@ -310,34 +322,35 @@
 </footer>
 
 <script>
-/* ---------- Helper UI ---------- */
+/* ---------- Small improvements + features (front-end only) ---------- */
 document.getElementById('yr').innerText = new Date().getFullYear();
 
+/* Sections */
 function showSection(id){
   document.querySelectorAll('#home,#dashboard').forEach(el => el.style.display = 'none');
   document.getElementById(id).style.display = 'block';
   if(id === 'dashboard') renderFullTransactions();
 }
 
-/* ---------- SLIDER ---------- */
+/* Slider with keyboard accessibility */
 const slides = document.getElementById('slides');
 const dots = document.getElementById('dots');
 let slideIndex = 0;
 const total = slides.children.length;
 for(let i=0;i<total;i++){
-  const d = document.createElement('div'); d.className='dot' + (i===0?' active':''); d.onclick = ()=>goTo(i); dots.appendChild(d);
+  const d = document.createElement('button'); d.className='dot' + (i===0?' active':''); d.setAttribute('aria-label','Go to slide '+(i+1)); d.onclick = ()=>goTo(i); dots.appendChild(d);
 }
 function goTo(i){ slideIndex=i; updateSlide(); }
 function nextSlide(){ slideIndex = (slideIndex+1)%total; updateSlide(); }
 function prevSlide(){ slideIndex = (slideIndex-1+total)%total; updateSlide(); }
 function updateSlide(){ slides.style.transform = `translateX(-${slideIndex*100}%)`; [...dots.children].forEach((x,idx)=>x.classList.toggle('active',idx===slideIndex)); }
 let slideTimer = setInterval(nextSlide,5000);
-
-/* pause on hover */
 slides.parentElement.addEventListener('mouseenter',()=>clearInterval(slideTimer));
 slides.parentElement.addEventListener('mouseleave',()=>slideTimer=setInterval(nextSlide,5000));
+slides.parentElement.addEventListener('focusin',()=>clearInterval(slideTimer));
+slides.parentElement.addEventListener('focusout',()=>slideTimer=setInterval(nextSlide,5000));
 
-/* ---------- Prices simulation ---------- */
+/* Prices simulation (same but slightly optimized) */
 function randomWalk(prev, volatility=0.003){
   const changePct = (Math.random()-0.5)*volatility*2;
   return +(prev*(1+changePct)).toFixed(4);
@@ -345,31 +358,35 @@ function randomWalk(prev, volatility=0.003){
 const priceEls = Array.from(document.querySelectorAll('.price .muted'));
 let basePrices = [1.0864,1.2741,147.82,1840.30];
 function tickPrices(){
-  basePrices = basePrices.map((p,i)=>randomWalk(p, i===2?0.008:0.003)); // JPY more volatile
+  basePrices = basePrices.map((p,i)=>randomWalk(p, i===2?0.008:0.003));
   priceEls.forEach((el,i)=>el.textContent = basePrices[i]);
 }
 setInterval(tickPrices,4000);
 
-/* ---------- Chart (Chart.js) ---------- */
-const ctx = document.getElementById('priceChart').getContext('2d');
-let labels = []; let data = [];
-const now = Date.now();
-for(let i=15;i>=0;i--){ labels.push(new Date(now - i*60000).toLocaleTimeString().slice(0,5)); data.push((1.07 + Math.random()*0.02).toFixed(4)); }
-const chart = new Chart(ctx, {
-  type:'line',
-  data:{labels, datasets:[{label:'EUR/USD', data, tension:0.25, borderColor: 'rgba(227,6,19,0.95)', backgroundColor:'rgba(227,6,19,0.06)', pointRadius:0}]},
-  options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{display:true},y:{display:true}}}
-});
-setInterval(()=>{ // push new simulated point
-  const t = new Date().toLocaleTimeString().slice(0,5);
-  const last = parseFloat(chart.data.datasets[0].data.slice(-1)[0]);
-  const next = +(last * (1 + (Math.random()-0.5)*0.002)).toFixed(4);
-  chart.data.labels.push(t); chart.data.datasets[0].data.push(next);
-  if(chart.data.labels.length>30){ chart.data.labels.shift(); chart.data.datasets[0].data.shift(); }
-  chart.update();
-},5000);
+/* Chart (Chart.js) — wait for Chart to be available */
+function createChart(){
+  const ctx = document.getElementById('priceChart').getContext('2d');
+  let labels = []; let data = [];
+  const now = Date.now();
+  for(let i=15;i>=0;i--){ labels.push(new Date(now - i*60000).toLocaleTimeString().slice(0,5)); data.push((1.07 + Math.random()*0.02).toFixed(4)); }
+  window.__DTChart = new Chart(ctx, {
+    type:'line',
+    data:{labels, datasets:[{label:'EUR/USD', data, tension:0.25, borderColor: 'rgba(227,6,19,0.95)', backgroundColor:'rgba(227,6,19,0.06)', pointRadius:0}]},
+    options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{display:true},y:{display:true}}}
+  });
+  setInterval(()=>{
+    const t = new Date().toLocaleTimeString().slice(0,5);
+    const last = parseFloat(window.__DTChart.data.datasets[0].data.slice(-1)[0]);
+    const next = +(last * (1 + (Math.random()-0.5)*0.002)).toFixed(4);
+    window.__DTChart.data.labels.push(t); window.__DTChart.data.datasets[0].data.push(next);
+    if(window.__DTChart.data.labels.length>30){ window.__DTChart.data.labels.shift(); window.__DTChart.data.datasets[0].data.shift(); }
+    window.__DTChart.update();
+  },5000);
+}
+// If Chart is ready (deferred), wait briefly
+if(window.Chart) createChart(); else document.addEventListener('DOMContentLoaded', ()=>{ if(window.Chart) createChart(); setTimeout(()=>{ if(window.Chart) createChart(); },500); });
 
-/* ---------- Transactions & balance (localStorage) ---------- */
+/* Transactions & balance (localStorage) */
 let transactions = JSON.parse(localStorage.getItem('dt_transactions')||'[]');
 let balance = parseFloat(localStorage.getItem('dt_balance')||'5420'); // default
 function saveState(){ localStorage.setItem('dt_transactions', JSON.stringify(transactions)); localStorage.setItem('dt_balance', balance); updateUI(); }
@@ -419,15 +436,15 @@ function renderFullTransactions(){
   });
 }
 
-/* ---------- Login / Signup (localStorage-based, front-end only) ---------- */
+/* Login / Signup (localStorage-based, front-end only) */
 const modal = document.getElementById('modal');
 const loginBox = document.getElementById('loginBox');
 const signupBox = document.getElementById('signupBox');
 document.getElementById('tabLogin').onclick = ()=>toggleTab('login');
 document.getElementById('tabSignup').onclick = ()=>toggleTab('signup');
 
-function openModal(mode='login'){ modal.classList.add('show'); toggleTab(mode); }
-function closeModal(){ modal.classList.remove('show'); document.getElementById('loginMsg').innerText=''; document.getElementById('signupMsg').innerText=''; }
+function openModal(mode='login'){ modal.classList.add('show'); modal.setAttribute('aria-hidden','false'); toggleTab(mode); }
+function closeModal(){ modal.classList.remove('show'); modal.setAttribute('aria-hidden','true'); document.getElementById('loginMsg').innerText=''; document.getElementById('signupMsg').innerText=''; }
 
 function toggleTab(mode){
   if(mode==='login'){ loginBox.style.display='block'; signupBox.style.display='none'; document.getElementById('tabLogin').classList.add('active'); document.getElementById('tabSignup').classList.remove('active'); }
@@ -473,15 +490,27 @@ function loginAs(phone){
   }
 })();
 
-/* ---------- Payment prompt (front-end only) ---------- */
+/* Payment prompt and WhatsApp link */
+const waPhone = '254796518099';
 function payPrompt(){
-  alert('To pay: use M-Pesa Till 3675058\nAfter payment send transaction ID via WhatsApp to +254796518099');
+  const url = `https://wa.me/${waPhone}?text=${encodeURIComponent('Hello, I paid via Till 3675058. Please verify. Txn ID:')}`;
+  window.open(url,'_blank');
 }
+// set links
+const waLink = document.getElementById('waLink'); waLink.href = `https://wa.me/${waPhone}`;
+const waPay = document.getElementById('waPay'); waPay.href = `https://wa.me/${waPhone}?text=${encodeURIComponent('I want to deposit to Till 3675058')}`;
 
-/* ---------- Quick helpers ---------- */
-function openPricing(){ alert('Pricing plans: Starter, Pro, VIP — contact us for details.'); }
+/* Export CSV & Clear transactions */
+function exportCSV(){
+  if(!transactions.length){ alert('No transactions to export'); return; }
+  const csv = ['Type,Amount,Time', ...transactions.map(t=>`${t.type},"${t.amount}","${t.time}"`) ].join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'transactions.csv'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+}
+function clearTransactions(){ if(confirm('Clear all local demo transactions?')){ transactions=[]; balance = 0; saveState(); } }
 
-/* ---------- Demo seed data ---------- */
+/* Demo seed data */
 if(!localStorage.getItem('dt_transactions')){
   transactions.push({type:'Deposit', amount:'KES 2,000', time:new Date().toLocaleString()});
   transactions.push({type:'Deposit', amount:'KES 3,420', time:new Date(Date.now()-86400000).toLocaleString()});
