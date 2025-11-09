@@ -1,106 +1,328 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Deriv Trade — Fresh Build</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Deriv_Trade — Learn & Demo Trading</title>
+  <meta name="description" content="Deriv_Trade — Demo trading, learning academy, simulated bots and live chat (front-end demo).">
+  <link rel="icon" href="data:,"><!-- lightweight favicon -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
   <style>
-    body{margin:0;font-family:Arial;background:#000;color:#fff}
-    header{padding:16px;background:#111;border-bottom:2px solid #e30613;display:flex;justify-content:space-between;align-items:center}
-    h1{margin:0;color:#e30613}
+    /* Palette: keep original dark + red accent */
+    :root{--bg:#000;--panel:#0b0b0b;--accent:#e30613;--muted:#bdbdbd;--glass: rgba(255,255,255,0.03);--success:#2bd17d}
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,Arial; background:var(--bg);color:#fff;-webkit-font-smoothing:antialiased}
 
-    .container{padding:16px;max-width:1200px;margin:auto}
+    /* Layout */
+    header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:3px solid var(--accent);background:linear-gradient(90deg,#060606,#0b0b0b)}
+    .brand{display:flex;gap:12px;align-items:center}
+    .logo{width:46px;height:46px;border-radius:10px;background:linear-gradient(135deg,#e00,#900);display:flex;align-items:center;justify-content:center;font-weight:800}
+    nav{display:flex;gap:8px;align-items:center}
+    nav button,a{background:transparent;color:#fff;border:1px solid rgba(255,0,0,0.08);padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:600}
+    nav .primary{background:var(--accent);border:none}
 
-    /* Demo account */
-    .demo-box{background:#0d0d0d;padding:16px;border-radius:10px;margin-bottom:20px;border:1px solid #222}
-    input, select{width:100%;padding:10px;margin-top:8px;background:#111;border:1px solid #333;color:#fff;border-radius:6px}
-    button{padding:10px 16px;border:none;border-radius:6px;background:#e30613;color:#fff;cursor:pointer;font-weight:bold}
+    .wrap{max-width:1150px;margin:24px auto;padding:0 18px}
+    .grid{display:grid;grid-template-columns:1fr 380px;gap:18px}
+    @media (max-width:980px){.grid{grid-template-columns:1fr}}
 
-    /* Chart */
-    canvas{background:#111;border-radius:10px;margin-top:20px;padding:10px}
+    .card{background:linear-gradient(180deg,rgba(255,255,255,0.01),var(--glass));padding:14px;border-radius:10px;border:1px solid #141414}
+    h2,h3{color:var(--accent);margin:0 0 8px}
+    p.muted{color:var(--muted);margin:0}
+
+    /* hero */
+    .hero{display:flex;gap:18px;align-items:center;padding:20px;border-radius:12px;overflow:hidden;border:1px solid #111}
+    .hero img{max-width:100%;border-radius:8px}
+
+    /* controls */
+    .btn{background:var(--accent);color:#fff;padding:10px 14px;border-radius:9px;border:none;cursor:pointer;font-weight:700}
+    .btn.ghost{background:transparent;border:1px solid rgba(255,0,0,0.12);color:var(--muted)}
+    .chip{background:#080808;padding:6px 8px;border-radius:8px;border:1px solid rgba(255,255,255,0.02)}
+
+    /* chart */
+    .chart-wrap{height:320px;padding:8px}
+
+    /* modal */
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:200;opacity:0;pointer-events:none;transition:opacity .18s}
+    .modal.show{opacity:1;pointer-events:auto}
+    .modal-box{width:420px;background:linear-gradient(180deg,#0b0b0b,#090909);padding:18px;border-radius:12px;border:1px solid #161616}
+    .tabs{display:flex;gap:8px;margin-bottom:12px}
+    .tabs button{flex:1;padding:8px;border-radius:8px}
+
+    input,select,textarea{background:#0b0b0b;border:1px solid rgba(255,0,0,0.06);padding:10px;border-radius:8px;color:#fff;width:100%}
+    .small{padding:8px 10px}
+
+    /* chat */
+    .chat{background:#070707;padding:10px;border-radius:8px;border:1px solid #141414;height:220px;overflow:auto}
+    .msg{margin-bottom:8px}
+    .msg.me{text-align:right}
+
+    footer{margin-top:28px;padding:18px;text-align:center;color:var(--muted);border-top:1px solid #141414}
+
+    /* book/lessons */
+    .book{display:grid;grid-template-columns:1fr 320px;gap:18px}
+    .lesson{padding:12px;border-radius:8px;background:#0b0b0b;border:1px solid #121212}
+    @media (max-width:980px){.book{grid-template-columns:1fr}}
+
+    /* responsive niceties */
+    .mt12{margin-top:12px}
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
 <header>
-  <h1>Deriv Trade</h1>
-  <button onclick="resetDemo()">Reset Demo</button>
-</header>
-
-<div class="container">
-  <div class="demo-box">
-    <h2>Demo Trading Account</h2>
-    <p>Balance: <strong id="balance">KES 100,000</strong></p>
-
-    <label>Select Currency Pair</label>
-    <select id="pair">
-      <option value="EURUSD">EUR/USD</option>
-      <option value="GBPUSD">GBP/USD</option>
-      <option value="USDJPY">USD/JPY</option>
-      <option value="XAUUSD">XAU/USD</option>
-    </select>
-
-    <label>Amount to Trade</label>
-    <input id="amount" type="number" placeholder="Enter amount" />
-
-    <button onclick="placeTrade()">Place Trade</button>
-
-    <div id="tradeMsg" style="margin-top:10px;color:#0f0"></div>
+  <div class="brand">
+    <div class="logo">DT</div>
+    <div>
+      <div style="font-weight:800">Deriv_Trade</div>
+      <div class="muted" style="font-size:12px">Smart Forex • Signals • Training</div>
+    </div>
   </div>
 
-  <h2>Live Candles Chart</h2>
-  <canvas id="chart" height="300"></canvas>
+  <nav aria-label="Main nav">
+    <button onclick="show('home')">Home</button>
+    <button onclick="show('dashboard')">Dashboard</button>
+    <button onclick="show('learn')">Learn</button>
+    <a class="primary" id="waPay" href="#" target="_blank">Pay / WhatsApp</a>
+    <button onclick="openAuth('login')">Login</button>
+  </nav>
+</header>
+
+<main class="wrap">
+  <!-- HOME -->
+  <section id="home">
+    <div class="hero card">
+      <div style="flex:1">
+        <h2>Trade with confidence</h2>
+        <p class="muted">Accurate signals, practical courses and demo accounts. M-Pesa Till: <strong style="color:var(--accent)">3675058</strong></p>
+        <div class="mt12"><button class="btn" onclick="show('dashboard')">Go to Dashboard</button> <button class="btn ghost" onclick="openAuth('signup')">Start Free</button></div>
+      </div>
+      <div style="width:360px"><img src="https://images.unsplash.com/photo-1559523160-1a5c3f6f0a12?q=80&w=800&auto=format&fit=crop&s=11c7f6eed9b3d0db4a8cc3aca58658bf" alt="trading"></div>
+    </div>
+
+    <div class="grid mt12">
+      <div>
+        <div class="card">
+          <h3>Live Market Prices (sim)</h3>
+          <div id="prices" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+            <div class="chip">EUR/USD <div class="muted" id="p0">1.0864</div></div>
+            <div class="chip">GBP/USD <div class="muted" id="p1">1.2741</div></div>
+            <div class="chip">USD/JPY <div class="muted" id="p2">147.82</div></div>
+            <div class="chip">XAU/USD <div class="muted" id="p3">1,840.30</div></div>
+          </div>
+        </div>
+
+        <div class="card mt12">
+          <h3>Signals</h3>
+          <div style="margin-top:10px">
+            <div class="chip">BUY EUR/USD — TP 1.0990 • SL 1.0790</div>
+            <div class="chip" style="margin-left:8px">SELL XAU/USD — TP 2280 • SL 2330</div>
+          </div>
+        </div>
+
+        <div class="card mt12">
+          <h3>Trading Bots (Demo)</h3>
+          <p class="muted">Start simple simulated bots that place demo trades into your demo account.</p>
+          <div style="display:flex;gap:8px;margin-top:10px">
+            <div class="chip">Bot A — Trend Sniper <button class="small btn ghost" id="botA" onclick="toggleBot('A')">Start</button></div>
+            <div class="chip">Bot B — Mean Revert <button class="small btn ghost" id="botB" onclick="toggleBot('B')">Start</button></div>
+          </div>
+        </div>
+      </div>
+
+      <aside class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div class="muted">Account Balance</div>
+            <div style="font-weight:800;font-size:22px;color:var(--accent)" id="balance">KES 5,420</div>
+            <div class="muted" style="font-size:12px">Type: <span id="accType">Real</span></div>
+          </div>
+          <div style="text-align:right">
+            <button class="small btn" onclick="activateDemo()">Use Demo (KES 10,000)</button>
+            <button class="small btn ghost" onclick="deposit()">Deposit</button>
+          </div>
+        </div>
+
+        <div class="chart-wrap mt12 card" style="padding:10px">
+          <canvas id="priceChart" aria-label="Price chart"></canvas>
+        </div>
+
+        <div class="mt12">
+          <h3 style="margin-bottom:8px">Live Market Chat</h3>
+          <div class="chat" id="liveChat"><div class="msg muted">Select Market Up / Down to vote — assistant will reply.</div></div>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button class="btn" onclick="vote('UP')">Market Up</button>
+            <button class="btn ghost" onclick="vote('DOWN')">Market Down</button>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- LEARN -->
+  <section id="learn" style="display:none">
+    <div class="card book">
+      <div style="padding:12px">
+        <h2>Trading Academy — Step by Step</h2>
+        <p class="muted">A beginner-friendly course embedded into the site. Follow the steps and practice on the demo.</p>
+
+        <div class="lesson mt12">
+          <h3>1 — What is trading?</h3>
+          <p>Trading is buying or selling instruments (pairs, commodities) to profit from price moves. You buy when you expect a rise, sell when you expect a fall.</p>
+        </div>
+
+        <div class="lesson mt12">
+          <h3>2 — Market basics</h3>
+          <p>Learn currency pairs, bid/ask, spread, pips, and the impact of economic news.</p>
+        </div>
+
+        <div class="lesson mt12">
+          <h3>3 — Risk management</h3>
+          <p>Use stop-loss, risk only a small % per trade and size positions properly.</p>
+        </div>
+
+        <div class="lesson mt12">
+          <h3>4 — Demo practice</h3>
+          <ol>
+            <li>Activate demo (KES 10,000).</li>
+            <li>Observe chart and signals.</li>
+            <li>Use bots or manual simulated trades.</li>
+            <li>Review your simulated transaction history.</li>
+          </ol>
+        </div>
+      </div>
+
+      <aside style="padding:12px">
+        <h3>Quick Glossary</h3>
+        <p class="muted"><strong>Pair:</strong> EUR/USD — base vs quote.</p>
+        <p class="muted"><strong>TP/SL:</strong> Take profit / Stop loss — limits for exits.</p>
+        <p class="muted"><strong>Leverage:</strong> Borrowed exposure (use carefully).</p>
+      </aside>
+    </div>
+  </section>
+
+  <!-- DASHBOARD -->
+  <section id="dashboard" style="display:none">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <h2>Dashboard</h2>
+        <div class="muted">Welcome, <span id="userName">Guest</span></div>
+      </div>
+
+      <div class="mt12">
+        <h3>Transaction History</h3>
+        <div id="transList" class="mt12"></div>
+        <div style="display:flex;gap:8px;margin-top:12px"><button class="btn" onclick="exportCSV()">Export CSV</button><button class="btn ghost" onclick="clearTransactions()">Clear</button></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- AUTH MODAL -->
+<div id="modal" class="modal" aria-hidden="true">
+  <div class="modal-box">
+    <div class="tabs">
+      <button id="tabLogin" class="primary small" onclick="switchTab('login')">Login</button>
+      <button id="tabSignup" class="small" onclick="switchTab('signup')">Signup</button>
+    </div>
+
+    <div id="loginBox">
+      <input id="loginPhone" placeholder="Phone (2547...)" />
+      <input id="loginPass" type="password" placeholder="Password" style="margin-top:8px" />
+      <div style="display:flex;gap:8px;margin-top:12px"><button class="btn" onclick="doLogin()">Login</button><button class="btn ghost" onclick="closeAuth()">Close</button></div>
+      <div id="loginMsg" style="margin-top:8px;color:#f66"></div>
+    </div>
+
+    <div id="signupBox" style="display:none">
+      <input id="signupName" placeholder="Full name" />
+      <input id="signupPhone" placeholder="Phone (2547...)" style="margin-top:8px" />
+      <input id="signupEmail" placeholder="Email" style="margin-top:8px" />
+      <input id="signupPass" type="password" placeholder="Password" style="margin-top:8px" />
+      <div style="display:flex;gap:8px;margin-top:12px"><button class="btn" onclick="doSignup()">Create account</button><button class="btn ghost" onclick="closeAuth()">Close</button></div>
+      <div id="signupMsg" style="margin-top:8px;color:var(--success)"></div>
+    </div>
+  </div>
 </div>
 
+<footer>
+  <div class="wrap"><div style="text-align:center">© <span id="yr"></span> Deriv_Trade • Demo platform (front-end only)</div></div>
+</footer>
+
 <script>
-let bal = 100000;
-let ctx = document.getElementById('chart');
-let prices = [1.1000, 1.1010, 1.0995, 1.1008];
+// --- small helpers ---
+document.getElementById('yr').innerText = new Date().getFullYear();
+let current = 'home';
+function show(id){ document.querySelectorAll('#home,#learn,#dashboard').forEach(s=>s.style.display='none'); document.getElementById(id).style.display='block'; current=id; if(id==='dashboard') renderTransactions(); }
 
-let chart = new Chart(ctx, {
-  type: 'candlestick',
-  data: {datasets: [{label: 'Market', data: []}]},
-});
+// modal auth
+const modal = document.getElementById('modal');
+function openAuth(tab='login'){ modal.classList.add('show'); modal.setAttribute('aria-hidden','false'); switchTab(tab); }
+function closeAuth(){ modal.classList.remove('show'); modal.setAttribute('aria-hidden','true'); }
+function switchTab(tab){ document.getElementById('loginBox').style.display = tab==='login'?'block':'none'; document.getElementById('signupBox').style.display = tab==='signup'?'block':'none'; }
 
-function updateChart(){
-  const last = prices[prices.length-1];
-  const next = last + (Math.random() - 0.5) * 0.002;
-  prices.push(next);
+// --- local storage state ---
+let transactions = JSON.parse(localStorage.getItem('dt_transactions')||'[]');
+let balance = parseFloat(localStorage.getItem('dt_balance')||'5420');
+let users = JSON.parse(localStorage.getItem('dt_users')||'{}');
+let isDemo = JSON.parse(localStorage.getItem('dt_isDemo')||'false');
+let bots = {A:false,B:false};
 
-  chart.data.datasets[0].data.push({
-    o:last,
-    h:last + Math.random()*0.001,
-    l:last - Math.random()*0.001,
-    c:next
-  });
-  chart.update();
+function saveState(){ localStorage.setItem('dt_transactions', JSON.stringify(transactions)); localStorage.setItem('dt_balance', balance); localStorage.setItem('dt_users', JSON.stringify(users)); localStorage.setItem('dt_isDemo', JSON.stringify(isDemo)); updateUI(); }
+function updateUI(){ document.getElementById('balance').innerText = 'KES ' + Math.round(balance).toLocaleString(); document.getElementById('accType').innerText = isDemo? 'Demo':'Real'; renderChatNotice(); }
+function renderTransactions(){ const el = document.getElementById('transList'); el.innerHTML=''; transactions.slice().reverse().forEach(t=>{ const d = document.createElement('div'); d.className='chip'; d.style.display='block'; d.style.marginBottom='8px'; d.innerHTML = `<strong>${t.type}</strong> • ${t.amount} • <span class="muted">${t.time}</span>`; el.appendChild(d); }); }
+
+// seed demo transactions
+if(!localStorage.getItem('dt_transactions')){
+  transactions.push({type:'Deposit', amount:'KES 2,000', time:new Date().toLocaleString()});
+  transactions.push({type:'Deposit', amount:'KES 3,420', time:new Date(Date.now()-86400000).toLocaleString()});
+  saveState();
 }
-setInterval(updateChart, 2000);
+updateUI();
 
-function placeTrade(){
-  let amt = parseFloat(document.getElementById('amount').value);
-  if(isNaN(amt) || amt<=0){
-    document.getElementById('tradeMsg').innerText='Enter a valid amount';
-    return;
-  }
+// --- Demo activation ---
+function activateDemo(){ if(confirm('Activate demo account with KES 10,000?')){ balance = 10000; isDemo = true; transactions.push({type:'Demo Start', amount:'KES 10,000', time: new Date().toLocaleString()}); saveState(); alert('Demo active. Use bots or place simulated trades.'); } }
 
-  if(amt>bal){
-    document.getElementById('tradeMsg').innerText='Not enough balance';
-    return;
-  }
+// deposit/withdraw (front-end only)
+function deposit(){ const a = prompt('Enter deposit amount (KES):','500'); if(!a) return; const v = parseFloat(a); if(isNaN(v)||v<=0){ alert('Invalid'); return;} balance += v; transactions.push({type:'Deposit', amount:'KES '+v.toLocaleString(), time:new Date().toLocaleString()}); saveState(); alert('Deposit recorded locally. For real payments use M-Pesa Till 3675058.'); }
 
-  bal -= amt;
-  document.getElementById('balance').innerText = 'KES ' + bal;
-  document.getElementById('tradeMsg').innerText='Trade placed successfully!';
-}
+// bots (simulated)
+function toggleBot(id){ bots[id] = !bots[id]; document.getElementById('bot'+id).innerText = bots[id]? 'Stop':'Start'; if(bots[id]){ window['botInt_'+id] = setInterval(()=>{ if(isDemo){ const amt = Math.round(Math.random()*300)+50; const win = Math.random()>0.5; balance += win? amt : -Math.round(amt*0.6); transactions.push({type:'SimTrade', amount:(win?'+KES ':'-KES ')+amt.toLocaleString(), time:new Date().toLocaleString()}); saveState(); } },7000); } else clearInterval(window['botInt_'+id]); }
 
-function resetDemo(){
-  bal = 100000;
-  document.getElementById('balance').innerText = 'KES '+bal;
-  document.getElementById('tradeMsg').innerText='Demo reset.';
-}
+// live chat voting
+function vote(dir){ const c = document.getElementById('liveChat'); const you = document.createElement('div'); you.className='msg me'; you.innerHTML = `<strong>You:</strong> ${dir}`; c.appendChild(you); c.scrollTop = c.scrollHeight; setTimeout(()=>{ const bot = document.createElement('div'); bot.className='msg'; bot.innerHTML = `<strong>Assistant:</strong> ${dir==='UP'? 'Momentum indicates potential upside — watch resistance.' : 'Pressure on downside — watch support and manage risk.'}`; c.appendChild(bot); c.scrollTop = c.scrollHeight; },800); }
+function renderChatNotice(){ const c = document.getElementById('liveChat'); if(c.children.length===0) c.innerHTML = '<div class="msg muted">Select Up or Down to receive quick guidance.</div>'; }
+
+// --- auth (localStorage-based demo) ---
+function doSignup(){ const name = document.getElementById('signupName').value.trim(); const phone = document.getElementById('signupPhone').value.trim(); const email = document.getElementById('signupEmail').value.trim(); const pass = document.getElementById('signupPass').value; if(!name||!phone||!email||!pass){ document.getElementById('signupMsg').innerText='Fill all fields'; return; } if(users[phone]){ document.getElementById('signupMsg').innerText='Phone already used'; return; } users[phone] = {name,pass,email}; localStorage.setItem('dt_users', JSON.stringify(users)); document.getElementById('signupMsg').innerText = 'Account created ✓'; setTimeout(()=>{ closeAuth(); loginAs(phone); // open mailto to simulate welcome email
+  const subj = encodeURIComponent('Welcome to Deriv_Trade'); const body = encodeURIComponent(`Hi ${name},\n\nWelcome to Deriv_Trade. Your demo account is ready. Start with KES 10,000 demo balance and practice safely.\n\n- Deriv_Trade Team`); window.location.href = `mailto:${email}?subject=${subj}&body=${body}`; },600); }
+
+function doLogin(){ const phone = document.getElementById('loginPhone').value.trim(); const pass = document.getElementById('loginPass').value; if(!users[phone] || users[phone].pass !== pass){ document.getElementById('loginMsg').innerText='Invalid credentials'; return; } closeAuth(); loginAs(phone); const email = users[phone].email || ''; if(email){ const subj = encodeURIComponent('Login notification'); const body = encodeURIComponent(`Hi ${users[phone].name},\n\nYou just logged into Deriv_Trade. If this wasn't you, change your password.`); window.location.href = `mailto:${email}?subject=${subj}&body=${body}`; } }
+
+function loginAs(phone){ document.getElementById('userName').innerText = (users[phone] && users[phone].name) || 'Trader'; show('dashboard'); }
+
+// --- simulated trades (manual) ---
+function placeSimTrade(pair, amount, direction){ if(!isDemo){ alert('Switch to demo to place simulated trades'); return; } const amt = Math.round(amount); if(amt<=0){ alert('Invalid amount'); return; } if(amt>balance){ alert('Insufficient demo balance'); return; } // simple P/L random
+ const win = Math.random()>0.45; const pnl = win? Math.round(amt* (0.3 + Math.random()*0.7)) : -Math.round(amt*(0.2+Math.random()*0.6)); balance += pnl; transactions.push({type:'SimTrade', amount:(pnl>=0?'+KES ':'-KES ')+Math.abs(pnl).toLocaleString(), time: new Date().toLocaleString()}); saveState(); alert('Simulated trade closed ' + (pnl>=0? 'profit +KES ' : 'loss -KES ') + Math.abs(pnl).toLocaleString()); }
+
+// quick UI helpers for placing a manual trade (accessible from console)
+window.placeManual = function(){ const pair = 'EUR/USD'; const amount = parseFloat(prompt('Amount to risk (KES):','1000')); if(isNaN(amount)) return; const dir = confirm('Press OK for BUY (up), Cancel for SELL (down)')? 'BUY':'SELL'; placeSimTrade(pair, amount, dir); }
+
+// CSV export / clear
+function exportCSV(){ if(!transactions.length){ alert('No transactions'); return; } const csv = ['Type,Amount,Time', ...transactions.map(t=>`${t.type},"${t.amount}","${t.time}"`)].join('\n'); const blob = new Blob([csv], {type:'text/csv'}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'transactions.csv'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); }
+function clearTransactions(){ if(confirm('Clear all local demo transactions?')){ transactions=[]; balance = isDemo?10000:0; saveState(); } }
+
+// --- price simulation & chart ---
+const ctx = document.getElementById('priceChart').getContext('2d');
+let labels = [], dataPoints = [];
+for(let i=30;i>=0;i--){ labels.push(new Date(Date.now()-i*60000).toLocaleTimeString().slice(0,5)); dataPoints.push(1.07 + Math.random()*0.02); }
+const priceChart = new Chart(ctx, { type:'line', data:{labels, datasets:[{label:'EUR/USD', data:dataPoints, borderColor: 'rgba(227,6,19,0.95)', backgroundColor:'rgba(227,6,19,0.06)', tension:0.25, pointRadius:0}]}, options:{responsive:true,plugins:{legend:{display:false}}}});
+setInterval(()=>{ const t = new Date().toLocaleTimeString().slice(0,5); const last = priceChart.data.datasets[0].data.slice(-1)[0]; const next = +(last * (1 + (Math.random()-0.5)*0.002)).toFixed(4); priceChart.data.labels.push(t); priceChart.data.datasets[0].data.push(next); if(priceChart.data.labels.length>60){ priceChart.data.labels.shift(); priceChart.data.datasets[0].data.shift(); } priceChart.update(); // update small price chips
+ document.getElementById('p0').innerText = next.toFixed(4); document.getElementById('p1').innerText = (next + 0.1876).toFixed(4); document.getElementById('p2').innerText = (147 + Math.random()*2).toFixed(2); document.getElementById('p3').innerText = (1840 + Math.random()*10).toFixed(2); },4000);
+
+// set wa links
+const waPhone = '254796518099'; document.getElementById('waPay').href = `https://wa.me/${waPhone}?text=${encodeURIComponent('I want to deposit to Till 3675058')}`;
+
+// expose some globals for debugging/testing
+window._DT = {saveState, transactions, placeSimTrade, activateDemo};
 </script>
-
 </body>
 </html>
